@@ -105,7 +105,7 @@ export function DonationDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       contactMode: "existing",
-      contactId: donation ? String(donation.contactId) : "",
+      contactId: donation ? String(donation.donatorId) : "",
       firstName: "",
       lastName: "",
       email: "",
@@ -121,7 +121,7 @@ export function DonationDialog({
   useEffect(() => {
     form.reset({
       contactMode: donation ? "existing" : "existing",
-      contactId: donation ? String(donation.contactId) : "",
+      contactId: donation ? String(donation.donatorId) : "",
       firstName: "",
       lastName: "",
       email: "",
