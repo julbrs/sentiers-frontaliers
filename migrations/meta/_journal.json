@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1768834351101,
-      "tag": "0000_optimal_gwen_stacy",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1768840646603,
-      "tag": "0001_lush_gideon",
+      "when": 1769721420833,
+      "tag": "0000_rich_jocasta",
       "breakpoints": true
     }
   ]

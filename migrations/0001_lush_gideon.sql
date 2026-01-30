@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "tax_receipt_donation_unique" ON "tax_receipt" USING btree ("donation_id");

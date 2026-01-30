@@ -29,6 +29,12 @@ type DonationTableProps = {
 const formatCurrency = (value: number) =>
   Number(value).toLocaleString("fr-CA", { style: "currency", currency: "CAD" });
 
+const parseLocalDate = (dateString: string | Date) => {
+  if (dateString instanceof Date) return dateString;
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const paymentTypeLabel: Record<string, string> = {
   cash: "Espèces",
   check: "Chèque",
@@ -120,7 +126,7 @@ export function DonationTable({
               {donations.map((donation) => (
                 <TableRow key={donation.id}>
                   <TableCell>
-                    {new Date(donation.date).toLocaleDateString("fr-CA", {
+                    {parseLocalDate(donation.date).toLocaleDateString("fr-CA", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",

@@ -115,6 +115,7 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
 
   let pdfBase64: string;
   try {
+    const logoDataUri = loadLogoDataUri();
     const stream = await ReactPDF.renderToStream(
       <DonationReceiptPdf
         donorFirstName={record.contactFirstName}
@@ -124,6 +125,7 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
         date={record.date}
         seasonName={record.seasonName}
         donationId={donationId}
+        logoDataUri={logoDataUri}
       />,
     );
 

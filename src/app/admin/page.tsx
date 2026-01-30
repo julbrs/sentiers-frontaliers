@@ -17,7 +17,13 @@ import { format } from "date-fns";
 import AddSeasonDialog from "./add-season-dialog";
 
 function formatDate(date: Date | string) {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
+  let dateObj: Date;
+  if (typeof date === "string") {
+    const [year, month, day] = date.split("-").map(Number);
+    dateObj = new Date(year, month - 1, day);
+  } else {
+    dateObj = date;
+  }
   return format(dateObj, "yyyy-MM-dd");
 }
 
@@ -37,11 +43,17 @@ export default function AdminDashboard() {
       try {
         const seasonsData = await getData();
         setSeasons(
-          seasonsData.map((s) => ({
-            ...s,
-            startDate: new Date(s.startDate),
-            endDate: new Date(s.endDate),
-          })),
+          seasonsData.map((s) => {
+            const parseLocalDate = (dateString: string) => {
+              const [year, month, day] = dateString.split("-").map(Number);
+              return new Date(year, month - 1, day);
+            };
+            return {
+              ...s,
+              startDate: parseLocalDate(s.startDate as unknown as string),
+              endDate: parseLocalDate(s.endDate as unknown as string),
+            };
+          }),
         );
       } catch (error) {
         console.error("Error loading seasons:", error);

@@ -1,5 +1,5 @@
 {
-  "id": "03a687ad-f7bc-40f9-a322-614f070af723",
+  "id": "daed788b-163d-4c4f-9d0a-f4873c192eb2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -343,7 +343,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "tax_receipt_donation_unique": {
+          "name": "tax_receipt_donation_unique",
+          "columns": [
+            {
+              "expression": "donation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "tax_receipt_donation_id_donation_id_fk": {
           "name": "tax_receipt_donation_id_donation_id_fk",

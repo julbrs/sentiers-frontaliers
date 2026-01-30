@@ -8,6 +8,7 @@ export type DonationReceiptPdfProps = {
   date: string;
   seasonName: string;
   donationId: number;
+  logoDataUri?: string;
 };
 
 Font.register({
@@ -74,9 +75,9 @@ const DonorBlock = ({
   </View>
 );
 
-const OrgBlock = () => (
+const OrgBlock = ({ logoDataUri }: { logoDataUri?: string }) => (
   <View style={styles.org}>
-    <Image style={styles.logo} src="/logo.png" />
+    {logoDataUri && <Image style={styles.logo} src={logoDataUri} />}
     <View>
       <Text style={styles.orgTexts}>SENTIERS FRONTALIERS INC</Text>
       <Text style={styles.orgTexts}>Case postale 23</Text>
@@ -94,6 +95,7 @@ const ReceiptCopy = ({
   issuanceDate,
   receiptNo,
   seasonName,
+  logoDataUri,
 }: {
   copyLabel: string;
   donorFirstName: string;
@@ -104,12 +106,13 @@ const ReceiptCopy = ({
   issuanceDate: Date;
   receiptNo: string;
   seasonName: string;
+  logoDataUri?: string;
 }) => (
   <View style={styles.copyBox}>
     <Text style={styles.bigHeader}>REÇU OFFICIEL DE DON AUX FINS DE L'IMPÔT SUR LE REVENU</Text>
 
     <View style={styles.headerRow}>
-      <OrgBlock />
+      <OrgBlock logoDataUri={logoDataUri} />
       <View style={styles.headerRight}>
         <Text style={styles.rightTag}>Reçu no: {receiptNo}</Text>
         <DonorBlock
@@ -167,6 +170,7 @@ export const DonationReceiptPdf = ({
   date,
   seasonName,
   donationId,
+  logoDataUri,
 }: DonationReceiptPdfProps) => {
   const issuanceDate = new Date();
   const donationDate = new Date(date);
@@ -191,6 +195,7 @@ export const DonationReceiptPdf = ({
           issuanceDate={issuanceDate}
           receiptNo={receiptNo}
           seasonName={seasonName}
+          logoDataUri={logoDataUri}
         />
         <ReceiptCopy
           copyLabel="COPIE FÉDÉRALE"
@@ -202,6 +207,7 @@ export const DonationReceiptPdf = ({
           issuanceDate={issuanceDate}
           receiptNo={receiptNo}
           seasonName={seasonName}
+          logoDataUri={logoDataUri}
         />
         <ReceiptCopy
           copyLabel="COPIE PROVINCIALE"
@@ -213,6 +219,7 @@ export const DonationReceiptPdf = ({
           issuanceDate={issuanceDate}
           receiptNo={receiptNo}
           seasonName={seasonName}
+          logoDataUri={logoDataUri}
         />
       </Page>
     </Document>
