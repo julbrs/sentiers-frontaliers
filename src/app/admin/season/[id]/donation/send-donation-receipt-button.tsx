@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Mail } from "lucide-react";
 
 type SendDonationReceiptButtonProps = {
@@ -17,7 +17,6 @@ export function SendDonationReceiptButton({
   onSuccess,
 }: SendDonationReceiptButtonProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSend = async () => {
     setLoading(true);
@@ -31,13 +30,13 @@ export function SendDonationReceiptButton({
         throw new Error(error.error || "Échec de l'envoi du reçu");
       }
 
-      toast({ title: "Reçu envoyé", description: "Le reçu de don a été envoyé." });
+      toast.success("Reçu envoyé", {
+        description: `Le reçu de don #${donationId} a été envoyé avec succès. Une copie a été envoyée à l'adresse email du contact et à l'adresse de gestion des finances.`,
+      });
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: error instanceof Error ? error.message : "Impossible d'envoyer le reçu",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

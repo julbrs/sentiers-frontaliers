@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Header from "@/app/header";
 import { Footer } from "./footer";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Finances Sentiers Frontaliers - Réseau de Sentiers",
@@ -25,6 +26,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
+        <Toaster />
       </body>
     </html>
   );
