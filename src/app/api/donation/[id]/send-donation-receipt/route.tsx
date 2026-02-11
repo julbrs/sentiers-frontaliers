@@ -143,7 +143,10 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
   const msg = createMimeMessage();
   msg.setSender("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
   msg.setTo(record.contactEmail);
-  msg.setSubject(`Reçu de don - ${record.seasonName}`);
+  msg.setCc("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
+  msg.setSubject(
+    `[Sentiers Frontaliers] Reçu de don ${record.seasonName} pour ${record.contactFirstName} ${record.contactLastName}`,
+  );
   msg.addMessage({ contentType: "text/html", data: html });
   msg.addAttachment({
     filename: `recu_don_${donationId}.pdf`,
