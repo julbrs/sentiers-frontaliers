@@ -1,8 +1,3 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { getData } from "@/actions/season";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,154 +6,73 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Plus, Shield, Users, UserCog } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DollarSign, Users, UserCog } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
-import AddSeasonDialog from "./add-season-dialog";
-
-function formatDate(date: Date | string) {
-  let dateObj: Date;
-  if (typeof date === "string") {
-    const [year, month, day] = date.split("-").map(Number);
-    dateObj = new Date(year, month - 1, day);
-  } else {
-    dateObj = date;
-  }
-  return format(dateObj, "yyyy-MM-dd");
-}
-
-interface Season {
-  id: number;
-  name: string;
-  startDate: Date;
-  endDate: Date;
-}
 
 export default function AdminDashboard() {
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const seasonsData = await getData();
-        setSeasons(
-          seasonsData.map((s) => {
-            const parseLocalDate = (dateString: string) => {
-              const [year, month, day] = dateString.split("-").map(Number);
-              return new Date(year, month - 1, day);
-            };
-            return {
-              ...s,
-              startDate: parseLocalDate(s.startDate as unknown as string),
-              endDate: parseLocalDate(s.endDate as unknown as string),
-            };
-          }),
-        );
-      } catch (error) {
-        console.error("Error loading seasons:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
-  }
-
-  // Main Dashboard View
   return (
-    <>
-      <h2 className="text-3xl font-bold text-emerald-800 mb-6">Gestion des donations</h2>
+    <main className="space-y-6">
+      <h1 className="text-4xl font-bold text-emerald-800">Tableau de bord administrateur</h1>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Add Season Card */}
-        <Card className="border-dashed border-2 border-emerald-300">
+        {/* Donations Management Card */}
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Plus className="text-emerald-600" />
-              <span>Ajouter une année fiscale</span>
+              <DollarSign className="text-emerald-600" />
+              <span>Gestion des donations</span>
             </CardTitle>
-            <CardDescription>Créer une nouvelle année fiscale</CardDescription>
+            <CardDescription>Gérer les années fiscales et donations</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Ajoutez une nouvelle année fiscale pour gérer les donations.</p>
+            <p>Ajoutez des années fiscales, consultez et gérez les donations reçues.</p>
           </CardContent>
           <CardFooter>
-            <AddSeasonDialog />
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
+              <Link href="/admin/donation">Accéder</Link>
+            </Button>
           </CardFooter>
         </Card>
 
-        {/* Seasons Cards */}
-        {seasons.map((season) => (
-          <Card key={season.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="text-emerald-600" />
-                <span>{season.name}</span>
-              </CardTitle>
-              <CardDescription>
-                Du {formatDate(season.startDate)} au {formatDate(season.endDate)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Gérez les donations et les détails de cette année fiscale.</p>
-            </CardContent>
-            <CardFooter className="flex gap-2">
-              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
-                <Link
-                  href={`/admin/season/${season.id}/donation`}
-                  className="flex items-center justify-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Donations
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-
-        {/* Manage Contacts Card */}
-        <Card>
+        {/* Contacts Management Card */}
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="text-emerald-600" />
               <span>Gestion des contacts</span>
             </CardTitle>
-            <CardDescription>Gérez les contacts</CardDescription>
+            <CardDescription>Gérer les contacts</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Ajoutez, modifiez ou supprimez les contacts.</p>
           </CardContent>
           <CardFooter>
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
-              <Link href="/admin/contact">Gérer les contacts</Link>
+              <Link href="/admin/contact">Accéder</Link>
             </Button>
           </CardFooter>
         </Card>
 
-        {/* Manage Users Card */}
-        <Card>
+        {/* Users Management Card */}
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Shield className="text-emerald-600" />
+              <UserCog className="text-emerald-600" />
               <span>Gestion des utilisateurs</span>
             </CardTitle>
-            <CardDescription>Gérez les comptes utilisateurs</CardDescription>
+            <CardDescription>Gérer les comptes utilisateurs</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Ajoutez, modifiez ou supprimez les utilisateurs et leurs rôles.</p>
           </CardContent>
           <CardFooter>
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
-              <Link href="/admin/user">Gérer les utilisateurs</Link>
+              <Link href="/admin/user">Accéder</Link>
             </Button>
           </CardFooter>
         </Card>
       </div>
-    </>
+    </main>
   );
 }

@@ -3,6 +3,16 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isProfileRoute = pathname.startsWith("/profile");
+  const requiresAuthentication = isAdminRoute || isProfileRoute;
+
+  if (!requiresAuthentication) {
+    return NextResponse.next();
+  }
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -13,7 +23,8 @@ export async function proxy(request: NextRequest) {
   if (!session) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (session.user?.role !== "admin" && request.nextUrl.pathname.startsWith("/admin")) {
+
+  if (isAdminRoute && session.user?.role !== "admin") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -30,6 +41,6 @@ export const config = {
      * - /_next/image (image optimization files)
      * - /favicon.ico, /sitemap.xml, /robots.txt (metadata files)
      */
-    "/((?!login|api/auth|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icon®.svg).*)",
+    "/((?!login|api/auth|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icon.svg).*)",
   ],
 };

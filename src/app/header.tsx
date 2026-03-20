@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { LogIn, LogOut, Mountain, User } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { LogIn, LogOut, Mountain, User, Shield, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,14 @@ export default function Header() {
 function UserButton() {
   const { data, isPending, isRefetching, refetch } = authClient.useSession();
   const [signingOut, setSigningOut] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const user = (data as { user?: { name?: string | null; email?: string | null } } | null)?.user;
+  const user = (
+    data as { user?: { name?: string | null; email?: string | null; role?: string } } | null
+  )?.user;
   const displayName = user?.name || user?.email || "Profil";
+  const isAdmin = user?.role === "admin";
 
   async function handleLogout() {
     setSigningOut(true);
@@ -44,6 +49,18 @@ function UserButton() {
       setSigningOut(false);
     }
   }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (isPending || isRefetching) {
     return (
@@ -63,21 +80,62 @@ function UserButton() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1">
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 hover:bg-white/25 transition-colors"
+      >
         <User size={16} />
         <span className="text-sm font-medium leading-none">{displayName}</span>
-      </div>
-      <Button
-        onClick={handleLogout}
-        size="sm"
-        variant="secondary"
-        disabled={signingOut}
-        className={cn("bg-white text-emerald-700 hover:bg-emerald-50", signingOut && "opacity-70")}
-      >
-        <LogOut size={14} className="mr-2" />
-        {signingOut ? "Déconnexion..." : "Déconnexion"}
-      </Button>
+        <ChevronDown
+          size={14}
+          className={cn("transition-transform", dropdownOpen && "rotate-180")}
+        />
+      </button>
+
+      {dropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white text-gray-900 shadow-xl z-50">
+          <div className="border-b px-4 py-3">
+            <p className="text-sm font-medium">{displayName}</p>
+            {isAdmin && <p className="text-xs text-emerald-600 font-semibold">Administrateur</p>}
+          </div>
+
+          <div className="py-1">
+            {isAdmin && (
+              <>
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-emerald-50 transition-colors"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  <Shield size={16} className="text-emerald-600" />
+                  Tableau de bord admin
+                </Link>
+                <hr className="my-1" />
+              </>
+            )}
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <User size={16} />
+              Mon profil
+            </Link>
+            <button
+              onClick={() => {
+                handleLogout();
+                setDropdownOpen(false);
+              }}
+              disabled={signingOut}
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 transition-colors text-left disabled:opacity-70"
+            >
+              <LogOut size={16} />
+              {signingOut ? "Déconnexion..." : "Déconnexion"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
