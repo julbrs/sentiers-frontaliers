@@ -1,8 +1,18 @@
+import fs from "fs";
+import React from "react";
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { SES } from "@aws-sdk/client-ses";
+import { render } from "@react-email/components";
+import ReactPDF from "@react-pdf/renderer";
+import { createMimeMessage } from "mimetext";
+import { asc, eq } from "drizzle-orm";
+import MembershipCardEmail from "../../../../emails/membership-card";
+import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
-import { membership } from "@/db/schema";
+import { membership, membershipChild } from "@/db/schema";
+
+const ses = new SES();
 
 // Clover webhook payload for Hosted Checkout
 // Type: PAYMENT, Status: APPROVED | DECLINED
@@ -16,6 +26,79 @@ interface CloverWebhookPayload {
   message: string;
   checkoutSessionId: string;
 }
+
+const loadLogoDataUri = (): string | undefined => {
+  try {
+    const logoPath = `${process.cwd()}/public/membre.png`;
+    const b64 = fs.readFileSync(logoPath).toString("base64");
+    return `data:image/png;base64,${b64}`;
+  } catch {
+    return undefined;
+  }
+};
+
+const sendMembershipCardEmail = async (params: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  membershipId: number;
+  membershipType: "personal" | "family";
+  paidAt: Date;
+  secondAdultFirstName: string | null;
+  secondAdultLastName: string | null;
+  children: Array<{ firstName: string; lastName: string }>;
+}) => {
+  const html = await render(
+    React.createElement(MembershipCardEmail, {
+      firstName: params.firstName,
+      lastName: params.lastName,
+      membershipType: params.membershipType,
+      paidAt: params.paidAt,
+    }),
+  );
+
+  const logoDataUri = loadLogoDataUri();
+  const cardDocument = React.createElement(MembershipCardPdf, {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    type: params.membershipType,
+    paidAt: params.paidAt,
+    secondAdultFirstName: params.secondAdultFirstName,
+    secondAdultLastName: params.secondAdultLastName,
+    children: params.children,
+    membershipId: params.membershipId,
+    logoDataUri,
+  }) as unknown as Parameters<typeof ReactPDF.renderToStream>[0];
+
+  const stream = await ReactPDF.renderToStream(cardDocument);
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+
+  const pdfBase64 = Buffer.concat(chunks).toString("base64");
+  const membershipNo = String(params.membershipId).padStart(6, "0");
+
+  const msg = createMimeMessage();
+  msg.setSender("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
+  msg.setTo(params.email);
+  msg.setCc("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
+  msg.setSubject(
+    `[Sentiers Frontaliers] Carte de membre #${membershipNo} - ${params.firstName} ${params.lastName}`,
+  );
+  msg.addMessage({ contentType: "text/html", data: html });
+  msg.addAttachment({
+    filename: `carte_membre_${membershipNo}.pdf`,
+    contentType: "application/pdf",
+    data: pdfBase64,
+  });
+
+  const result = await ses.sendRawEmail({ RawMessage: { Data: Buffer.from(msg.asRaw()) } });
+  if (result.$metadata.httpStatusCode !== 200) {
+    throw new Error(`Email send failed with status ${result.$metadata.httpStatusCode}`);
+  }
+};
 
 function verifyCloverSignature(
   rawBody: string,
@@ -114,13 +197,71 @@ export async function POST(request: NextRequest) {
   );
 
   if (payload.status === "APPROVED") {
+    const rows = await db
+      .select({
+        id: membership.id,
+        status: membership.status,
+        paidAt: membership.paidAt,
+        type: membership.type,
+        firstName: membership.firstName,
+        lastName: membership.lastName,
+        secondAdultFirstName: membership.secondAdultFirstName,
+        secondAdultLastName: membership.secondAdultLastName,
+        email: membership.email,
+      })
+      .from(membership)
+      .where(eq(membership.cloverCheckoutId, checkoutSessionId))
+      .limit(1);
+
+    if (rows.length === 0) {
+      console.warn(
+        `[clover/webhook] No membership found for checkout session ${checkoutSessionId}`,
+      );
+      return NextResponse.json({ received: true });
+    }
+
+    const membershipRecord = rows[0];
+    const paidAt = membershipRecord.paidAt ?? new Date();
+
     await db
       .update(membership)
       .set({
         status: "paid",
-        paidAt: new Date(),
+        paidAt,
       })
       .where(eq(membership.cloverCheckoutId, checkoutSessionId));
+
+    const children = await db
+      .select({
+        firstName: membershipChild.firstName,
+        lastName: membershipChild.lastName,
+      })
+      .from(membershipChild)
+      .where(eq(membershipChild.membershipId, membershipRecord.id))
+      .orderBy(asc(membershipChild.id));
+
+    try {
+      await sendMembershipCardEmail({
+        email: membershipRecord.email,
+        firstName: membershipRecord.firstName,
+        lastName: membershipRecord.lastName,
+        membershipId: membershipRecord.id,
+        membershipType: membershipRecord.type,
+        paidAt,
+        secondAdultFirstName: membershipRecord.secondAdultFirstName,
+        secondAdultLastName: membershipRecord.secondAdultLastName,
+        children,
+      });
+      console.log(
+        `[clover/webhook] Membership card email sent for checkout session ${checkoutSessionId}`,
+      );
+    } catch (error) {
+      console.error(
+        `[clover/webhook] Failed to send membership card email for checkout session ${checkoutSessionId}`,
+        error,
+      );
+      return NextResponse.json({ error: "Failed to send membership card email" }, { status: 500 });
+    }
 
     console.log(
       `[clover/webhook] Membership marked as paid for checkout session ${checkoutSessionId}`,

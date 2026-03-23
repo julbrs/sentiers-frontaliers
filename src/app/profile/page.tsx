@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Heart, ListChecks } from "lucide-react";
 import { getMyMemberships } from "@/actions/membership";
 import { requireSession } from "@/lib/auth-server";
@@ -181,6 +182,16 @@ export default async function ProfilePage({
                                   {isActive ? "✓ Actif" : "Expirée"}
                                 </span>
                               </p>
+
+                              {isActive && (
+                                <div className="mt-2">
+                                  <Button asChild size="sm" className="w-full sm:w-auto">
+                                    <a href={`/api/membership/${item.id}/card`}>
+                                      Télécharger la carte de membre
+                                    </a>
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           );
                         })()}
