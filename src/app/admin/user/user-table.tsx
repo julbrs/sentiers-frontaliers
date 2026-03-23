@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserDialog } from "@/app/admin/user/user-dialog";
 import { deleteUser, type User } from "@/actions/user";
-import { useToast } from "@/hooks/use-toast";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 type UserTableProps = {
   users: User[];
@@ -23,7 +23,6 @@ type UserTableProps = {
 
 export function UserTable({ users, onRefresh }: UserTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const handleDelete = async (id: string, fullName: string) => {
     if (!confirm(`Delete user ${fullName}?`)) return;
@@ -31,13 +30,11 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     try {
       setDeletingId(id);
       await deleteUser(id);
-      toast({ title: "User deleted", description: `${fullName} has been removed.` });
+      toast("User deleted", { description: `${fullName} has been removed.` });
       onRefresh();
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Unable to delete this user.",
-        variant: "destructive",
       });
     } finally {
       setDeletingId(null);

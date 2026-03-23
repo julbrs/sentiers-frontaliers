@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Toaster } from "@/components/ui/toaster";
-import { useToast } from "@/hooks/use-toast";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 type RequestState = "idle" | "sending" | "sent";
 
@@ -24,21 +23,18 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [state, setState] = useState<RequestState>("idle");
-  const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  const callbackURL = useMemo(() => "/admin", []);
+  const callbackURL = useMemo(() => "/", []);
 
   useEffect(() => {
     const errorCode = searchParams.get("error");
     if (!errorCode) return;
 
-    toast({
-      title: "Impossible de vérifier le lien",
+    toast.error("Impossible de vérifier le lien", {
       description: errorMessages[errorCode] || "Une erreur est survenue. Merci de réessayer.",
-      variant: "destructive",
     });
-  }, [searchParams, toast]);
+  }, [searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,10 +42,8 @@ function LoginForm() {
 
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) {
-      toast({
-        title: "Adresse e-mail requise",
+      toast.error("Adresse e-mail requise", {
         description: "Indique une adresse pour recevoir ton lien de connexion.",
-        variant: "destructive",
       });
       return;
     }
@@ -71,17 +65,14 @@ function LoginForm() {
 
       setSentTo(trimmed);
       setState("sent");
-      toast({
-        title: "Lien envoyé",
+      toast("Lien envoyé", {
         description: "Consulte ta boîte mail. Le lien est valable 5 minutes.",
       });
     } catch (error) {
       const description = error instanceof Error ? error.message : "Une erreur est survenue.";
       setState("idle");
-      toast({
-        title: "Envoi impossible",
+      toast.error("Envoi impossible", {
         description,
-        variant: "destructive",
       });
       return;
     }
@@ -164,8 +155,6 @@ function LoginForm() {
           </CardFooter>
         </Card>
       </div>
-
-      <Toaster />
     </div>
   );
 }

@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createUser, updateUser, type UserInput, type User } from "@/actions/user";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -48,7 +48,6 @@ type UserDialogProps = {
 export function UserDialog({ user, onSuccess }: UserDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(formSchema),
@@ -73,20 +72,18 @@ export function UserDialog({ user, onSuccess }: UserDialogProps) {
 
       if (user) {
         await updateUser(user.id, values);
-        toast({ title: "User updated", description: "The user was updated successfully." });
+        toast("User updated", { description: "The user was updated successfully." });
       } else {
         await createUser(values);
-        toast({ title: "User created", description: "A new user was created." });
+        toast("User created", { description: "A new user was created." });
       }
 
       setOpen(false);
       form.reset();
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: user ? "Failed to update user" : "Failed to create user",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

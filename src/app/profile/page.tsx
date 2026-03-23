@@ -1,51 +1,213 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { User, Heart } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Heart, ListChecks } from "lucide-react";
+import { getMyMemberships } from "@/actions/membership";
+import { requireSession } from "@/lib/auth-server";
+import { MembershipForm } from "./membership-form";
+import { ProfileAlert } from "./profile-alert";
 
-export default function ProfilePage() {
+const typeLabel = {
+  personal: "Personnel",
+  family: "Familial",
+} as const;
+
+const statusLabel = {
+  pending: "En attente",
+  paid: "Payée",
+  failed: "Échec",
+  cancelled: "Annulée",
+} as const;
+
+const statusClassname = {
+  pending: "bg-amber-100 text-amber-800",
+  paid: "bg-emerald-100 text-emerald-800",
+  failed: "bg-red-100 text-red-800",
+  cancelled: "bg-zinc-200 text-zinc-800",
+} as const;
+
+function splitDisplayName(name: string | null | undefined) {
+  if (!name) {
+    return {
+      firstName: "",
+      lastName: "",
+    };
+  }
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length <= 1) {
+    return {
+      firstName: parts[0] ?? "",
+      lastName: "",
+    };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [session, memberships, params] = await Promise.all([
+    requireSession(),
+    getMyMemberships(),
+    searchParams,
+  ]);
+  const { firstName, lastName } = splitDisplayName(session.user.name);
+
+  const membership = params.membership as string | undefined;
+  const checkoutSessionId = params.checkoutSessionId as string | undefined;
+  const errorCode = params.errorCode as string | undefined;
+  const visibleMemberships = memberships.filter(
+    (item) => item.status !== "pending" && item.status !== "failed",
+  );
+
   return (
     <main className="space-y-6">
       <h1 className="text-4xl font-bold text-emerald-800">Mon profil</h1>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Membership Card */}
+      {membership && (
+        <ProfileAlert
+          type={membership as "success" | "failed"}
+          checkoutSessionId={checkoutSessionId}
+          errorCode={errorCode}
+        />
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Heart className="text-emerald-600" />
-              <span>Adhésion</span>
+              <span>Nouvelle adhésion</span>
             </CardTitle>
-            <CardDescription>Gestion de votre adhésion</CardDescription>
+            <CardDescription>
+              Personnel: 42$ | Familial: 65$ - Paiement sécurisé via Clover
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Consultez et gérez les détails de votre adhésion à l'organisation.</p>
+            <MembershipForm
+              initialFirstName={firstName}
+              initialLastName={lastName}
+              initialEmail={session.user.email ?? ""}
+            />
           </CardContent>
-          <CardFooter>
-            <p className="text-sm text-gray-500">Bientôt disponible</p>
-          </CardFooter>
         </Card>
 
-        {/* Profile Information Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <User className="text-emerald-600" />
-              <span>Informations personnelles</span>
+              <ListChecks className="text-emerald-600" />
+              <span>Mes adhésions</span>
             </CardTitle>
-            <CardDescription>Vos données de profil</CardDescription>
+            <CardDescription>Historique et statut de vos adhésions</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Consultez et modifiez vos informations personnelles.</p>
+            {visibleMemberships.length === 0 ? (
+              <p className="text-sm text-zinc-500">Aucune adhésion pour le moment.</p>
+            ) : (
+              <div className="space-y-3">
+                {visibleMemberships.map((item) => (
+                  <div key={item.id} className="rounded-lg border border-zinc-200 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-zinc-900">
+                          {typeLabel[item.type]} - {item.price.toFixed(2)}$
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusClassname[item.status]}`}
+                      >
+                        {statusLabel[item.status]}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm text-zinc-700">
+                      {item.firstName} {item.lastName}
+                    </p>
+
+                    {item.type === "family" &&
+                      item.secondAdultFirstName &&
+                      item.secondAdultLastName && (
+                        <p className="text-sm text-zinc-700">
+                          2e adulte : {item.secondAdultFirstName} {item.secondAdultLastName}
+                        </p>
+                      )}
+
+                    {item.children.length > 0 && (
+                      <div className="mt-2 text-sm text-zinc-700">
+                        <p className="font-medium">Enfants:</p>
+                        <ul className="list-disc pl-5">
+                          {item.children.map((child) => (
+                            <li key={child.id}>
+                              {child.firstName} {child.lastName}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {item.status === "paid" && item.paidAt && (
+                      <>
+                        {(() => {
+                          const startDate = new Date(item.paidAt);
+                          const endDate = new Date(startDate);
+                          endDate.setFullYear(endDate.getFullYear() + 1);
+                          const now = new Date();
+                          const isActive = startDate <= now && now < endDate;
+
+                          return (
+                            <div className="mt-3 space-y-1 rounded-lg bg-zinc-50 p-2 text-sm">
+                              <p>
+                                <span className="font-medium">Début:</span>{" "}
+                                {startDate.toLocaleDateString("fr-CA", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </p>
+                              <p>
+                                <span className="font-medium">Fin:</span>{" "}
+                                {endDate.toLocaleDateString("fr-CA", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </p>
+                              <p className="mt-2">
+                                <span
+                                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                                    isActive
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-amber-100 text-amber-800"
+                                  }`}
+                                >
+                                  {isActive ? "✓ Actif" : "Expirée"}
+                                </span>
+                              </p>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    )}
+
+                    {item.status === "failed" && item.cloverCheckoutUrl && (
+                      <a
+                        href={item.cloverCheckoutUrl}
+                        className="mt-2 inline-block text-sm font-medium text-emerald-700 underline"
+                      >
+                        Reprendre le paiement
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
-            <p className="text-sm text-gray-500">Bientôt disponible</p>
-          </CardFooter>
         </Card>
       </div>
     </main>

@@ -157,3 +157,58 @@ export const donationReceipt = pgTable(
   },
   (table) => [uniqueIndex("tax_receipt_donation_unique").on(table.donationId)],
 );
+
+export const membershipTypeEnum = pgEnum("membership_type", ["personal", "family"]);
+
+export const membershipStatusEnum = pgEnum("membership_status", [
+  "pending",
+  "paid",
+  "failed",
+  "cancelled",
+]);
+
+export const membership = pgTable(
+  "membership",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: text("user_id")
+      .references(() => user.id)
+      .notNull(),
+    type: membershipTypeEnum().notNull(),
+    status: membershipStatusEnum().notNull().default("pending"),
+    price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+    donationAmount: decimal("donation_amount", { precision: 10, scale: 2 }).default("0"),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    address: text("address").notNull(),
+    phone: text("phone").notNull(),
+    email: text("email").notNull(),
+    secondAdultFirstName: text("second_adult_first_name"),
+    secondAdultLastName: text("second_adult_last_name"),
+    cloverCheckoutId: text("clover_checkout_id"),
+    cloverCheckoutUrl: text("clover_checkout_url"),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date()),
+  },
+  (table) => [
+    index("membership_user_id_idx").on(table.userId),
+    index("membership_status_idx").on(table.status),
+  ],
+);
+
+export const membershipChild = pgTable(
+  "membership_child",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    membershipId: integer("membership_id")
+      .references(() => membership.id, { onDelete: "cascade" })
+      .notNull(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+  },
+  (table) => [index("membership_child_membership_id_idx").on(table.membershipId)],
+);

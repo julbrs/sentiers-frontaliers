@@ -1,0 +1,413 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createMembershipCheckout } from "@/actions/membership";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { DonationDialog } from "./donation-dialog";
+
+const membershipFormSchema = z
+  .object({
+    type: z.enum(["personal", "family"]),
+    firstName: z.string().trim().min(1, "Le prénom est requis"),
+    lastName: z.string().trim().min(1, "Le nom est requis"),
+    address: z.string().trim().min(1, "L'adresse est requise"),
+    phone: z.string().trim().min(1, "Le téléphone est requis"),
+    email: z.string().trim().email("Adresse email invalide"),
+    donationAmount: z.number().int().optional().default(0),
+    secondAdultFirstName: z.string().trim().optional(),
+    secondAdultLastName: z.string().trim().optional(),
+    children: z.array(
+      z.object({
+        firstName: z.string().trim().min(1, "Prénom requis"),
+        lastName: z.string().trim().min(1, "Nom requis"),
+      }),
+    ),
+  })
+  .superRefine((values, ctx) => {
+    if (values.type !== "family") {
+      return;
+    }
+
+    if (!values.secondAdultFirstName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Le prénom du 2e adulte est requis",
+        path: ["secondAdultFirstName"],
+      });
+    }
+
+    if (!values.secondAdultLastName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Le nom du 2e adulte est requis",
+        path: ["secondAdultLastName"],
+      });
+    }
+
+    if (!values.children.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ajoutez au moins un enfant",
+        path: ["children"],
+      });
+    }
+  });
+
+type MembershipFormValues = z.infer<typeof membershipFormSchema>;
+
+type MembershipFormProps = {
+  initialFirstName?: string;
+  initialLastName?: string;
+  initialEmail?: string;
+};
+
+export function MembershipForm({
+  initialFirstName = "",
+  initialLastName = "",
+  initialEmail = "",
+}: MembershipFormProps) {
+  const [loading, setLoading] = useState(false);
+  const [donationDialogOpen, setDonationDialogOpen] = useState(false);
+
+  const form = useForm<MembershipFormValues>({
+    resolver: zodResolver(membershipFormSchema),
+    defaultValues: {
+      type: "personal",
+      firstName: initialFirstName,
+      lastName: initialLastName,
+      address: "",
+      phone: "",
+      email: initialEmail,
+      donationAmount: 0,
+      secondAdultFirstName: "",
+      secondAdultLastName: "",
+      children: [],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "children",
+  });
+
+  const selectedType = form.watch("type");
+  const isFamily = selectedType === "family";
+
+  useEffect(() => {
+    if (isFamily) {
+      return;
+    }
+
+    form.setValue("secondAdultFirstName", "");
+    form.setValue("secondAdultLastName", "");
+    form.setValue("children", []);
+  }, [form, isFamily]);
+
+  useEffect(() => {
+    form.setValue("firstName", initialFirstName);
+    form.setValue("lastName", initialLastName);
+    form.setValue("email", initialEmail);
+  }, [form, initialEmail, initialFirstName, initialLastName]);
+
+  const onSubmit = async (values: MembershipFormValues) => {
+    try {
+      setLoading(true);
+      const checkoutUrl = await createMembershipCheckout({
+        ...values,
+        donationAmount: values.donationAmount ?? 0,
+        secondAdultFirstName: values.type === "family" ? values.secondAdultFirstName : undefined,
+        secondAdultLastName: values.type === "family" ? values.secondAdultLastName : undefined,
+        children: values.type === "family" ? values.children : [],
+      });
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      toast.error("Erreur", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Impossible de créer la session de paiement Clover.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type d'adhésion</FormLabel>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => field.onChange("personal")}
+                  className={cn(
+                    "rounded-lg border p-4 text-left transition-colors",
+                    field.value === "personal"
+                      ? "border-emerald-600 bg-emerald-50"
+                      : "border-zinc-200 hover:border-emerald-400",
+                  )}
+                >
+                  <p className="font-semibold text-emerald-800">Personnel</p>
+                  <p className="text-sm text-zinc-600">42$</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => field.onChange("family")}
+                  className={cn(
+                    "rounded-lg border p-4 text-left transition-colors",
+                    field.value === "family"
+                      ? "border-emerald-600 bg-emerald-50"
+                      : "border-zinc-200 hover:border-emerald-400",
+                  )}
+                >
+                  <p className="font-semibold text-emerald-800">Familial</p>
+                  <p className="text-sm text-zinc-600">65$</p>
+                </button>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prénom</FormLabel>
+                <FormControl>
+                  <Input placeholder="Jean" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom</FormLabel>
+                <FormControl>
+                  <Input placeholder="Dupont" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Adresse</FormLabel>
+              <FormControl>
+                <Input placeholder="123 rue de la Paix" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Téléphone</FormLabel>
+                <FormControl>
+                  <Input placeholder="514-555-1234" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="jean.dupont@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <FormLabel>Don (optionnel)</FormLabel>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setDonationDialogOpen(true)}
+            className="w-full mt-2"
+          >
+            {form.watch("donationAmount") > 0
+              ? `Modifier le don: ${form.watch("donationAmount")}$`
+              : "Ajouter un don"}
+          </Button>
+        </div>
+
+        {(() => {
+          const donationAmount = form.watch("donationAmount") ?? 0;
+          if (donationAmount > 20) {
+            return (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                <p className="font-medium">📄 Reçu fiscal</p>
+                <p>Un reçu fiscal sera généré pour votre don de {donationAmount}$.</p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+          <p className="font-medium">ℹ️ Validité</p>
+          <p>Votre adhésion sera valable 1 an à partir de la date de paiement.</p>
+        </div>
+
+        {isFamily && (
+          <div className="space-y-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+            <p className="font-semibold text-emerald-800">2e adulte</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="secondAdultFirstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prénom</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Marie" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="secondAdultLastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Dupont" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-emerald-800">Enfants</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => append({ firstName: "", lastName: "" })}
+                >
+                  Ajouter un enfant
+                </Button>
+              </div>
+
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-1 gap-3 rounded-md border bg-white p-3 md:grid-cols-12"
+                >
+                  <FormField
+                    control={form.control}
+                    name={`children.${index}.firstName`}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-5">
+                        <FormLabel>Prénom</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Alice" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`children.${index}.lastName`}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-5">
+                        <FormLabel>Nom</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Dupont" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="md:col-span-2 flex items-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full text-red-600 hover:text-red-700"
+                      onClick={() => remove(index)}
+                    >
+                      Retirer
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <FormField
+                control={form.control}
+                name="children"
+                render={() => (
+                  <FormItem>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+          disabled={loading}
+        >
+          {loading ? "Création de la session Clover..." : "Passer au paiement Clover"}
+        </Button>
+      </form>
+
+      <DonationDialog
+        open={donationDialogOpen}
+        onOpenChange={setDonationDialogOpen}
+        onConfirm={(amount) => form.setValue("donationAmount", amount)}
+        currentAmount={form.watch("donationAmount") ?? 0}
+      />
+    </Form>
+  );
+}

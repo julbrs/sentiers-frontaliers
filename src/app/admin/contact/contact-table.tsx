@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactDialog } from "@/app/admin/contact/contact-dialog";
 import { deleteContact, type Contact } from "@/actions/contact";
-import { useToast } from "@/hooks/use-toast";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 type ContactTableProps = {
   contacts: Contact[];
@@ -23,7 +23,6 @@ type ContactTableProps = {
 
 export function ContactTable({ contacts, onRefresh }: ContactTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const { toast } = useToast();
 
   const handleDelete = async (id: number, fullName: string) => {
     if (!confirm(`Supprimer le contact ${fullName} ?`)) return;
@@ -31,13 +30,11 @@ export function ContactTable({ contacts, onRefresh }: ContactTableProps) {
     try {
       setDeletingId(id);
       await deleteContact(id);
-      toast({ title: "Contact supprimé", description: `${fullName} a été supprimé.` });
+      toast("Contact supprimé", { description: `${fullName} a été supprimé.` });
       onRefresh();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Impossible de supprimer ce contact.",
-        variant: "destructive",
       });
     } finally {
       setDeletingId(null);

@@ -14,9 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Contact } from "@/actions/contact";
 import { deleteDonation, type DonationWithContact } from "@/actions/donation";
-import { useToast } from "@/hooks/use-toast";
 import { DonationDialog } from "@/app/admin/season/[id]/donation/donation-dialog";
 import { SendDonationReceiptButton } from "@/app/admin/season/[id]/donation/send-donation-receipt-button";
+import { toast } from "sonner";
 
 type DonationTableProps = {
   seasonId: number;
@@ -50,7 +50,6 @@ export function DonationTable({
   onContactCreated,
 }: DonationTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const { toast } = useToast();
 
   const receiptTitles = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("fr-CA", {
@@ -82,13 +81,11 @@ export function DonationTable({
     try {
       setDeletingId(id);
       await deleteDonation(id, seasonId);
-      toast({ title: "Don supprimé", description: `${label} a été supprimé.` });
+      toast("Don supprimé", { description: `${label} a été supprimé.` });
       onRefresh();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Impossible de supprimer ce don.",
-        variant: "destructive",
       });
     } finally {
       setDeletingId(null);
