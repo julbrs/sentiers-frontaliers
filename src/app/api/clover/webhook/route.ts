@@ -7,7 +7,7 @@ import { render } from "@react-email/components";
 import ReactPDF from "@react-pdf/renderer";
 import { createMimeMessage } from "mimetext";
 import { asc, eq } from "drizzle-orm";
-import MembershipCardEmail from "../../../../emails/membership-card";
+import MembershipCardEmail from "@/emails/membership-card";
 import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
 import { membership, membershipChild } from "@/db/schema";
@@ -81,9 +81,8 @@ const sendMembershipCardEmail = async (params: {
   const membershipNo = String(params.membershipId).padStart(6, "0");
 
   const msg = createMimeMessage();
-  msg.setSender("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
+  msg.setSender("Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
   msg.setTo(params.email);
-  msg.setCc("Finances Sentiers Frontaliers <finances@sentiersfrontaliers.com>");
   msg.setSubject(
     `[Sentiers Frontaliers] Carte de membre #${membershipNo} - ${params.firstName} ${params.lastName}`,
   );
