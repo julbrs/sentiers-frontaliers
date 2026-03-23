@@ -72,11 +72,9 @@ export default function MembershipCardEmail({
 
           <Section style={styles.footer}>
             <Text>
-              Julien Bras
+              Sentiers Frontaliers
               <br />
-              Finances Sentiers Frontaliers
-              <br />
-              finances@sentiersfrontaliers.com
+              info@sentiersfrontaliers.com
             </Text>
           </Section>
         </Container>
