@@ -60,8 +60,6 @@ export default async function ProfilePage({
   const { firstName, lastName } = splitDisplayName(session.user.name);
 
   const membership = params.membership as string | undefined;
-  const checkoutSessionId = params.checkoutSessionId as string | undefined;
-  const errorCode = params.errorCode as string | undefined;
   const visibleMemberships = memberships.filter(
     (item) => item.status !== "pending" && item.status !== "failed",
   );
@@ -70,13 +68,7 @@ export default async function ProfilePage({
     <main className="space-y-6">
       <h1 className="text-4xl font-bold text-emerald-800">Mon profil</h1>
 
-      {membership && (
-        <ProfileAlert
-          type={membership as "success" | "failed"}
-          checkoutSessionId={checkoutSessionId}
-          errorCode={errorCode}
-        />
-      )}
+      {membership && <ProfileAlert type={membership as "success" | "failed"} />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

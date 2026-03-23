@@ -162,8 +162,8 @@ async function createCloverHostedCheckout(params: {
       appUrl === "http://localhost:3000"
         ? undefined
         : {
-            success: `${appUrl}/profile?membership=success&checkoutSessionId={CHECKOUT_SESSION_ID}`,
-            failure: `${appUrl}/profile?membership=failed&errorCode={ERROR_CODE}`,
+            success: `${appUrl}/profile?membership=success`,
+            failure: `${appUrl}/profile?membership=failed`,
           },
   };
 
