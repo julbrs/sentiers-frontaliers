@@ -62,7 +62,8 @@ export default async function ProfilePage({
 
   const membership = params.membership as string | undefined;
   const visibleMemberships = memberships.filter(
-    (item) => item.status !== "pending" && item.status !== "failed",
+    (item) =>
+      item.status === "paid" || item.createdAt > new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), // Affiche les adhésions des dernières 24h même si le paiement a échoué.,
   );
 
   return (
@@ -198,14 +199,15 @@ export default async function ProfilePage({
                       </>
                     )}
 
-                    {item.status === "failed" && item.cloverCheckoutUrl && (
-                      <a
-                        href={item.cloverCheckoutUrl}
-                        className="mt-2 inline-block text-sm font-medium text-emerald-700 underline"
-                      >
-                        Reprendre le paiement
-                      </a>
-                    )}
+                    {(item.status === "failed" || item.status === "pending") &&
+                      item.cloverCheckoutUrl && (
+                        <a
+                          href={item.cloverCheckoutUrl}
+                          className="mt-2 inline-block text-sm font-medium text-emerald-700 underline"
+                        >
+                          Reprendre le paiement
+                        </a>
+                      )}
                   </div>
                 ))}
               </div>

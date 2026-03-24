@@ -185,6 +185,7 @@ export const membership = pgTable(
     email: text("email").notNull(),
     secondAdultFirstName: text("second_adult_first_name"),
     secondAdultLastName: text("second_adult_last_name"),
+    topoMapOrder: boolean("topo_map_order").default(false).notNull(),
     cloverCheckoutId: text("clover_checkout_id"),
     cloverCheckoutUrl: text("clover_checkout_url"),
     paidAt: timestamp("paid_at"),

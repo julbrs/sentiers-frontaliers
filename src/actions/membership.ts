@@ -13,6 +13,8 @@ const PRICE_BY_TYPE = {
   family: 65,
 } as const;
 
+const TOPO_MAP_PRICE = 10;
+
 const childSchema = z.object({
   firstName: z.string().trim().min(1, "Le prenom de l'enfant est requis"),
   lastName: z.string().trim().min(1, "Le nom de l'enfant est requis"),
@@ -27,6 +29,7 @@ const membershipInputSchema = z
     phone: z.string().trim().min(1, "Le telephone est requis"),
     email: z.string().trim().email("Adresse email invalide"),
     donationAmount: z.number().optional().default(0),
+    topoMapOrder: z.boolean().optional().default(false),
     secondAdultFirstName: z.string().trim().optional(),
     secondAdultLastName: z.string().trim().optional(),
     children: z.array(childSchema).optional(),
@@ -70,6 +73,7 @@ export type MembershipWithChildren = {
   status: "pending" | "paid" | "failed" | "cancelled";
   price: number;
   donationAmount: number | null;
+  topoMapOrder: boolean;
   firstName: string;
   lastName: string;
   address: string;
@@ -113,6 +117,7 @@ async function createCloverHostedCheckout(params: {
   membershipId: number;
   amount: number;
   donationAmount?: number;
+  topoMapOrder?: boolean;
 }) {
   const merchantId = process.env.CLOVER_MERCHANT_ID;
   const privateToken = process.env.CLOVER_PRIVATE_TOKEN;
@@ -140,6 +145,15 @@ async function createCloverHostedCheckout(params: {
       name: "Don",
       note: "Contribution volontaire",
       price: donationAmountInCents,
+      unitQty: 1,
+    });
+  }
+
+  if (params.topoMapOrder) {
+    lineItems.push({
+      name: "Carte topographique hydrofuge",
+      note: "Livraison incluse",
+      price: Math.round(TOPO_MAP_PRICE * 100),
       unitQty: 1,
     });
   }
@@ -204,6 +218,7 @@ export const createMembershipCheckout = async (input: CreateMembershipInput) => 
   const parsed = membershipInputSchema.parse(input);
   const amount = PRICE_BY_TYPE[parsed.type];
   const donationAmount = parsed.donationAmount ?? 0;
+  const topoMapOrder = parsed.topoMapOrder ?? false;
 
   const [createdMembership] = await db
     .insert(membership)
@@ -213,6 +228,7 @@ export const createMembershipCheckout = async (input: CreateMembershipInput) => 
       status: "pending",
       price: amount.toFixed(2),
       donationAmount: donationAmount.toFixed(2),
+      topoMapOrder,
       firstName: parsed.firstName,
       lastName: parsed.lastName,
       address: parsed.address,
@@ -244,6 +260,7 @@ export const createMembershipCheckout = async (input: CreateMembershipInput) => 
       membershipId: createdMembership.id,
       amount,
       donationAmount,
+      topoMapOrder,
     });
 
     await db
@@ -344,6 +361,7 @@ export const getMyMemberships = async (): Promise<MembershipWithChildren[]> => {
     status: row.status as "pending" | "paid" | "failed" | "cancelled",
     price: Number(row.price),
     donationAmount: row.donationAmount ? Number(row.donationAmount) : null,
+    topoMapOrder: row.topoMapOrder,
     children: childrenByMembership.get(row.id) ?? [],
   }));
 };

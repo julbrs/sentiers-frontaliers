@@ -8,6 +8,7 @@ import ReactPDF from "@react-pdf/renderer";
 import { createMimeMessage } from "mimetext";
 import { asc, eq } from "drizzle-orm";
 import MembershipCardEmail from "@/emails/membership-card";
+import OrderNotificationEmail from "@/emails/order-notification";
 import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
 import { membership, membershipChild } from "@/db/schema";
@@ -26,6 +27,8 @@ interface CloverWebhookPayload {
   message: string;
   checkoutSessionId: string;
 }
+
+const TOPO_MAP_PRICE = 25;
 
 const loadLogoDataUri = (): string | undefined => {
   try {
@@ -58,6 +61,7 @@ const sendMembershipCardEmail = async (params: {
   );
 
   const logoDataUri = loadLogoDataUri();
+  // eslint-disable-next-line react/no-children-prop
   const cardDocument = React.createElement(MembershipCardPdf, {
     firstName: params.firstName,
     lastName: params.lastName,
@@ -96,6 +100,57 @@ const sendMembershipCardEmail = async (params: {
   const result = await ses.sendRawEmail({ RawMessage: { Data: Buffer.from(msg.asRaw()) } });
   if (result.$metadata.httpStatusCode !== 200) {
     throw new Error(`Email send failed with status ${result.$metadata.httpStatusCode}`);
+  }
+};
+
+const sendOrderNotificationEmail = async (params: {
+  membershipNo: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  phone: string;
+  email: string;
+  membershipType: "personal" | "family";
+  membershipPrice: number;
+  donationAmount: number;
+  topoMapOrder: boolean;
+  paidAt: Date;
+}) => {
+  const html = await render(
+    React.createElement(OrderNotificationEmail, {
+      membershipNo: params.membershipNo,
+      firstName: params.firstName,
+      lastName: params.lastName,
+      address: params.address,
+      phone: params.phone,
+      email: params.email,
+      membershipType: params.membershipType,
+      membershipPrice: params.membershipPrice,
+      donationAmount: params.donationAmount,
+      topoMapOrder: params.topoMapOrder,
+      topoMapPrice: TOPO_MAP_PRICE,
+      paidAt: params.paidAt,
+    }),
+  );
+
+  const result = await ses.sendEmail({
+    Source: "Sentiers Frontaliers <finances@sentiersfrontaliers.com>",
+    Destination: { ToAddresses: ["finances@sentiersfrontaliers.com"] },
+    Message: {
+      Subject: {
+        Data: `[Adhésion] Nouvelle commande #${params.membershipNo} - ${params.firstName} ${params.lastName}`,
+        Charset: "UTF-8",
+      },
+      Body: {
+        Html: { Data: html, Charset: "UTF-8" },
+      },
+    },
+  });
+
+  if (result.$metadata.httpStatusCode !== 200) {
+    throw new Error(
+      `Order notification email failed with status ${result.$metadata.httpStatusCode}`,
+    );
   }
 };
 
@@ -204,9 +259,14 @@ export async function POST(request: NextRequest) {
         type: membership.type,
         firstName: membership.firstName,
         lastName: membership.lastName,
+        address: membership.address,
+        phone: membership.phone,
         secondAdultFirstName: membership.secondAdultFirstName,
         secondAdultLastName: membership.secondAdultLastName,
         email: membership.email,
+        price: membership.price,
+        donationAmount: membership.donationAmount,
+        topoMapOrder: membership.topoMapOrder,
       })
       .from(membership)
       .where(eq(membership.cloverCheckoutId, checkoutSessionId))
@@ -260,6 +320,34 @@ export async function POST(request: NextRequest) {
         error,
       );
       return NextResponse.json({ error: "Failed to send membership card email" }, { status: 500 });
+    }
+
+    try {
+      const membershipNo = String(membershipRecord.id).padStart(6, "0");
+      await sendOrderNotificationEmail({
+        membershipNo,
+        firstName: membershipRecord.firstName,
+        lastName: membershipRecord.lastName,
+        address: membershipRecord.address,
+        phone: membershipRecord.phone,
+        email: membershipRecord.email,
+        membershipType: membershipRecord.type,
+        membershipPrice: Number(membershipRecord.price),
+        donationAmount: membershipRecord.donationAmount
+          ? Number(membershipRecord.donationAmount)
+          : 0,
+        topoMapOrder: membershipRecord.topoMapOrder,
+        paidAt,
+      });
+      console.log(
+        `[clover/webhook] Order notification email sent for checkout session ${checkoutSessionId}`,
+      );
+    } catch (error) {
+      console.error(
+        `[clover/webhook] Failed to send order notification email for checkout session ${checkoutSessionId}`,
+        error,
+      );
+      // Non-blocking: log error but don't fail the webhook
     }
 
     console.log(

@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { createMembershipCheckout } from "@/actions/membership";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { DonationDialog } from "./donation-dialog";
 
 const membershipFormSchema = z
   .object({
@@ -27,7 +26,9 @@ const membershipFormSchema = z
     address: z.string().trim().min(1, "L'adresse est requise"),
     phone: z.string().trim().min(1, "Le téléphone est requis"),
     email: z.string().trim().email("Adresse email invalide"),
+    donationEnabled: z.boolean().optional().default(false),
     donationAmount: z.number().int().optional().default(0),
+    topoMapOrder: z.boolean().optional().default(false),
     secondAdultFirstName: z.string().trim().optional(),
     secondAdultLastName: z.string().trim().optional(),
     children: z.array(
@@ -81,7 +82,6 @@ export function MembershipForm({
   initialEmail = "",
 }: MembershipFormProps) {
   const [loading, setLoading] = useState(false);
-  const [donationDialogOpen, setDonationDialogOpen] = useState(false);
 
   const form = useForm<MembershipFormValues>({
     resolver: zodResolver(membershipFormSchema),
@@ -92,7 +92,9 @@ export function MembershipForm({
       address: "",
       phone: "",
       email: initialEmail,
+      donationEnabled: false,
       donationAmount: 0,
+      topoMapOrder: false,
       secondAdultFirstName: "",
       secondAdultLastName: "",
       children: [],
@@ -128,7 +130,8 @@ export function MembershipForm({
       setLoading(true);
       const checkoutUrl = await createMembershipCheckout({
         ...values,
-        donationAmount: values.donationAmount ?? 0,
+        donationAmount: values.donationEnabled ? (values.donationAmount ?? 0) : 0,
+        topoMapOrder: values.topoMapOrder ?? false,
         secondAdultFirstName: values.type === "family" ? values.secondAdultFirstName : undefined,
         secondAdultLastName: values.type === "family" ? values.secondAdultLastName : undefined,
         children: values.type === "family" ? values.children : [],
@@ -154,7 +157,7 @@ export function MembershipForm({
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type d'adhésion</FormLabel>
+              <FormLabel>Type d&apos;adhésion</FormLabel>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <button
                   type="button"
@@ -259,33 +262,6 @@ export function MembershipForm({
             )}
           />
         </div>
-
-        <div>
-          <FormLabel>Don (optionnel)</FormLabel>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setDonationDialogOpen(true)}
-            className="w-full mt-2"
-          >
-            {form.watch("donationAmount") > 0
-              ? `Modifier le don: ${form.watch("donationAmount")}$`
-              : "Ajouter un don"}
-          </Button>
-        </div>
-
-        {(() => {
-          const donationAmount = form.watch("donationAmount") ?? 0;
-          if (donationAmount > 20) {
-            return (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                <p className="font-medium">📄 Reçu fiscal</p>
-                <p>Un reçu fiscal sera généré pour votre don de {donationAmount}$.</p>
-              </div>
-            );
-          }
-          return null;
-        })()}
 
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
           <p className="font-medium">ℹ️ Validité</p>
@@ -393,6 +369,141 @@ export function MembershipForm({
           </div>
         )}
 
+        <FormField
+          control={form.control}
+          name="donationEnabled"
+          render={({ field }) => (
+            <FormItem>
+              <div
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
+                  field.value
+                    ? "border-emerald-600 bg-emerald-50"
+                    : "border-zinc-200 hover:border-emerald-400",
+                )}
+                onClick={() => {
+                  const nextValue = !field.value;
+                  field.onChange(nextValue);
+                  if (!nextValue) {
+                    form.setValue("donationAmount", 0);
+                  }
+                }}
+              >
+                <div
+                  className={cn(
+                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                    field.value ? "border-emerald-600 bg-emerald-600" : "border-zinc-400",
+                  )}
+                >
+                  {field.value && (
+                    <svg
+                      className="h-3 w-3 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div className="w-full">
+                  <p className="font-semibold text-emerald-800">
+                    Bonifiez votre adhésion avec un don
+                  </p>
+                  <p className="mb-2 text-sm text-zinc-600">
+                    Un reçu d&apos;impôt sera émis pour tout don supérieur à 20$.
+                  </p>
+                  <FormField
+                    control={form.control}
+                    name="donationAmount"
+                    render={({ field: amountField }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            placeholder="0"
+                            disabled={!field.value}
+                            value={amountField.value ?? 0}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) => {
+                              const raw = event.target.value;
+                              const parsed = Number.parseInt(raw || "0", 10);
+                              amountField.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {(() => {
+          const donationAmount = form.watch("donationAmount") ?? 0;
+          const donationEnabled = form.watch("donationEnabled") ?? false;
+          if (donationEnabled && donationAmount > 20) {
+            return (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                <p className="font-medium">📄 Reçu fiscal</p>
+                <p>Un reçu fiscal sera généré pour votre don de {donationAmount}$.</p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
+        <FormField
+          control={form.control}
+          name="topoMapOrder"
+          render={({ field }) => (
+            <FormItem>
+              <div
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
+                  field.value
+                    ? "border-emerald-600 bg-emerald-50"
+                    : "border-zinc-200 hover:border-emerald-400",
+                )}
+                onClick={() => field.onChange(!field.value)}
+              >
+                <div
+                  className={cn(
+                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                    field.value ? "border-emerald-600 bg-emerald-600" : "border-zinc-400",
+                  )}
+                >
+                  {field.value && (
+                    <svg
+                      className="h-3 w-3 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold text-emerald-800">
+                    Carte topographique hydrofuge — 10$
+                  </p>
+                  <p className="text-sm text-zinc-600">
+                    Livraison incluse. Carte haute qualité résistante à l&apos;eau.
+                  </p>
+                </div>
+              </div>
+            </FormItem>
+          )}
+        />
+
         <Button
           type="submit"
           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -401,13 +512,6 @@ export function MembershipForm({
           {loading ? "Création de la session Clover..." : "Passer au paiement Clover"}
         </Button>
       </form>
-
-      <DonationDialog
-        open={donationDialogOpen}
-        onOpenChange={setDonationDialogOpen}
-        onConfirm={(amount) => form.setValue("donationAmount", amount)}
-        currentAmount={form.watch("donationAmount") ?? 0}
-      />
     </Form>
   );
 }
