@@ -144,135 +144,135 @@ export default function MembershipCardPreviewPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="personal">Personnel</SelectItem>
+                <SelectItem value="personal">Individuel</SelectItem>
                 <SelectItem value="family">Famille</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid gap-3">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName">Prénom</Label>
             <Input
               id="firstName"
               value={form.firstName}
               onChange={onChange("firstName")}
-              placeholder="First name"
+              placeholder="Prénom"
             />
           </div>
 
           <div className="grid gap-3">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName">Nom</Label>
             <Input
               id="lastName"
               value={form.lastName}
               onChange={onChange("lastName")}
-              placeholder="Last name"
+              placeholder="Nom"
             />
           </div>
 
           {form.type === "family" && (
             <>
               <div className="space-y-2 border-t pt-4">
-                <p className="text-sm font-semibold">Second Adult (opcional)</p>
+                <p className="text-sm font-semibold">Second Adult (optionnel)</p>
 
                 <div className="grid gap-3">
-                  <Label htmlFor="secondAdultFirstName">First Name</Label>
+                  <Label htmlFor="secondAdultFirstName">Prénom</Label>
                   <Input
                     id="secondAdultFirstName"
                     value={form.secondAdultFirstName}
                     onChange={onChange("secondAdultFirstName")}
-                    placeholder="First name"
+                    placeholder="Prénom"
                   />
                 </div>
 
                 <div className="grid gap-3">
-                  <Label htmlFor="secondAdultLastName">Last Name</Label>
+                  <Label htmlFor="secondAdultLastName">Nom</Label>
                   <Input
                     id="secondAdultLastName"
                     value={form.secondAdultLastName}
                     onChange={onChange("secondAdultLastName")}
-                    placeholder="Last name"
+                    placeholder="Nom"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 border-t pt-4">
-                <p className="text-sm font-semibold">Children (optional)</p>
+                <p className="text-sm font-semibold">Enfants (optionnel)</p>
 
                 <div>
                   <Label htmlFor="child1FirstName" className="text-xs">
-                    Child 1 - First Name
+                    Enfant 1 - Prénom
                   </Label>
                   <Input
                     id="child1FirstName"
                     value={form.child1FirstName}
                     onChange={onChange("child1FirstName")}
-                    placeholder="First name"
+                    placeholder="Prénom"
                     className="h-8"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="child1LastName" className="text-xs">
-                    Child 1 - Last Name
+                    Enfant 1 - Nom
                   </Label>
                   <Input
                     id="child1LastName"
                     value={form.child1LastName}
                     onChange={onChange("child1LastName")}
-                    placeholder="Last name"
+                    placeholder="Nom"
                     className="h-8"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="child2FirstName" className="text-xs">
-                    Child 2 - First Name
+                    Enfant 2 - Prénom
                   </Label>
                   <Input
                     id="child2FirstName"
                     value={form.child2FirstName}
                     onChange={onChange("child2FirstName")}
-                    placeholder="First name"
+                    placeholder="Prénom"
                     className="h-8"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="child2LastName" className="text-xs">
-                    Child 2 - Last Name
+                    Enfant 2 - Nom
                   </Label>
                   <Input
                     id="child2LastName"
                     value={form.child2LastName}
                     onChange={onChange("child2LastName")}
-                    placeholder="Last name"
+                    placeholder="Nom"
                     className="h-8"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="child3FirstName" className="text-xs">
-                    Child 3 - First Name
+                    Enfant 3 - Prénom
                   </Label>
                   <Input
                     id="child3FirstName"
                     value={form.child3FirstName}
                     onChange={onChange("child3FirstName")}
-                    placeholder="First name"
+                    placeholder="Prénom"
                     className="h-8"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="child3LastName" className="text-xs">
-                    Child 3 - Last Name
+                    Enfant 3 - Nom
                   </Label>
                   <Input
                     id="child3LastName"
                     value={form.child3LastName}
                     onChange={onChange("child3LastName")}
-                    placeholder="Last name"
+                    placeholder="Nom"
                     className="h-8"
                   />
                 </div>
@@ -281,12 +281,12 @@ export default function MembershipCardPreviewPage() {
           )}
 
           <div className="grid gap-3 border-t pt-4">
-            <Label htmlFor="paidAt">Paid Date</Label>
+            <Label htmlFor="paidAt">Date de paiement</Label>
             <Input id="paidAt" type="date" value={form.paidAt} onChange={onChange("paidAt")} />
           </div>
 
           <div className="grid gap-3">
-            <Label htmlFor="membershipId">Membership ID</Label>
+            <Label htmlFor="membershipId">ID d'adhésion</Label>
             <Input
               id="membershipId"
               type="number"
@@ -297,7 +297,7 @@ export default function MembershipCardPreviewPage() {
 
           <div className="flex gap-2 pt-2">
             <Button type="button" onClick={reset} variant="secondary">
-              Reset to defaults
+              Réinitialiser par défaut
             </Button>
           </div>
         </CardContent>
@@ -305,7 +305,7 @@ export default function MembershipCardPreviewPage() {
 
       <Card className="flex flex-col">
         <CardHeader>
-          <CardTitle>Live preview</CardTitle>
+          <CardTitle>Aperçu en direct</CardTitle>
         </CardHeader>
         <CardContent className="flex-1">
           <div className="h-[80vh] overflow-hidden rounded-md border">

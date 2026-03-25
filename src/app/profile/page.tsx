@@ -5,9 +5,10 @@ import { getMyMemberships } from "@/actions/membership";
 import { requireSession } from "@/lib/auth-server";
 import { MembershipForm } from "./membership-form";
 import { ProfileAlert } from "./profile-alert";
+import { PRICE_BY_TYPE } from "@/constants";
 
 const typeLabel = {
-  personal: "Personnel",
+  personal: "Individuel",
   family: "Familial",
 } as const;
 
@@ -80,7 +81,8 @@ export default async function ProfilePage({
               <span>Nouvelle adhésion</span>
             </CardTitle>
             <CardDescription>
-              Personnel: 42$ | Familial: 65$ - Paiement sécurisé via Clover
+              Individuel: {PRICE_BY_TYPE.personal}$ | Familial: {PRICE_BY_TYPE.family}$ - Paiement
+              sécurisé via Clover
             </CardDescription>
           </CardHeader>
           <CardContent>

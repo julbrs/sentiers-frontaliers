@@ -283,7 +283,7 @@ export const MembershipCardPdf = ({
   const expiryDate = new Date(paidAt);
   expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
-  const typeLabel = type === "family" ? "Famille" : "Personnel";
+  const typeLabel = type === "family" ? "Famille" : "Individuel";
 
   return (
     <Document title="Carte de membre Sentiers Frontaliers">

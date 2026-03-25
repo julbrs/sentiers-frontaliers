@@ -7,13 +7,7 @@ import { z } from "zod";
 import { db } from "@/db/drizzle";
 import { membership, membershipChild } from "@/db/schema";
 import { requireSession } from "@/lib/auth-server";
-
-const PRICE_BY_TYPE = {
-  personal: 42,
-  family: 65,
-} as const;
-
-const TOPO_MAP_PRICE = 10;
+import { PRICE_BY_TYPE, TOPO_MAP_PRICE } from "@/constants";
 
 const childSchema = z.object({
   firstName: z.string().trim().min(1, "Le prenom de l'enfant est requis"),
@@ -133,7 +127,7 @@ async function createCloverHostedCheckout(params: {
 
   const lineItems = [
     {
-      name: params.membershipType === "family" ? "Adhesion familiale" : "Adhesion personnelle",
+      name: params.membershipType === "family" ? "Adhesion familiale" : "Adhesion ind",
       note: `Membership #${params.membershipId} - ${params.fullName}`,
       price: membershipAmountInCents,
       unitQty: 1,

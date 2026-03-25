@@ -14,11 +14,21 @@ import { toast } from "sonner";
 
 type RequestState = "idle" | "sending" | "sent";
 
+const DEFAULT_CALLBACK_URL = "/";
+
 const errorMessages: Record<string, string> = {
   INVALID_TOKEN: "Le lien est invalide ou déjà utilisé.",
   EXPIRED_TOKEN: "Le lien a expiré. Demandez-en un nouveau.",
   new_user_signup_disabled: "Les nouvelles inscriptions sont désactivées.",
 };
+
+function getSafeCallbackURL(redirect: string | null) {
+  if (!redirect || !redirect.startsWith("/") || redirect.startsWith("//")) {
+    return DEFAULT_CALLBACK_URL;
+  }
+
+  return redirect;
+}
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -26,7 +36,19 @@ function LoginForm() {
   const [state, setState] = useState<RequestState>("idle");
   const searchParams = useSearchParams();
 
-  const callbackURL = useMemo(() => "/", []);
+  const callbackURL = useMemo(
+    () => getSafeCallbackURL(searchParams.get("redirect")),
+    [searchParams],
+  );
+  const errorCallbackURL = useMemo(() => {
+    const params = new URLSearchParams();
+    if (callbackURL !== DEFAULT_CALLBACK_URL) {
+      params.set("redirect", callbackURL);
+    }
+
+    const queryString = params.toString();
+    return queryString ? `/login?${queryString}` : "/login";
+  }, [callbackURL]);
 
   useEffect(() => {
     const errorCode = searchParams.get("error");
@@ -56,7 +78,7 @@ function LoginForm() {
         email: trimmed,
         callbackURL,
         newUserCallbackURL: callbackURL,
-        errorCallbackURL: "/login",
+        errorCallbackURL,
       });
 
       if (error) {

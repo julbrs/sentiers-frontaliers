@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const requestedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
 
   const isAdminRoute = pathname.startsWith("/admin");
   const isProfileRoute = pathname.startsWith("/profile");
@@ -21,11 +22,15 @@ export async function proxy(request: NextRequest) {
   // This is the recommended approach to optimistically redirect users
   // We recommend handling auth checks in each page/route
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", requestedPath);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (isAdminRoute && session.user?.role !== "admin") {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", requestedPath);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

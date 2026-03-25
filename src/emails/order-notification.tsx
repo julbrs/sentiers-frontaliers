@@ -159,7 +159,7 @@ export default function OrderNotificationEmail({
           <Section>
             <Row style={styles.lineItemRow}>
               <Column style={{ ...styles.valueCell, flex: 1 }}>
-                Adhésion {membershipType === "family" ? "familiale" : "personnelle"}
+                Adhésion {membershipType === "family" ? "familiale" : "individuelle"}
               </Column>
               <Column style={{ ...styles.valueCell, textAlign: "right" as const, width: "80px" }}>
                 {membershipPrice.toFixed(2)} $

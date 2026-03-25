@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { createMembershipCheckout } from "@/actions/membership";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { PRICE_BY_TYPE, TOPO_MAP_PRICE } from "@/constants";
 
 const membershipFormSchema = z
   .object({
@@ -169,8 +170,8 @@ export function MembershipForm({
                       : "border-zinc-200 hover:border-(--sf-red-700)",
                   )}
                 >
-                  <p className="font-semibold text-(--sf-red-800)">Personnel</p>
-                  <p className="text-sm text-zinc-600">42$</p>
+                  <p className="font-semibold text-(--sf-red-800)">Individuel</p>
+                  <p className="text-sm text-zinc-600">{PRICE_BY_TYPE.personal}$</p>
                 </button>
                 <button
                   type="button"
@@ -183,7 +184,7 @@ export function MembershipForm({
                   )}
                 >
                   <p className="font-semibold text-(--sf-red-800)">Familial</p>
-                  <p className="text-sm text-zinc-600">65$</p>
+                  <p className="text-sm text-zinc-600">{PRICE_BY_TYPE.family}$</p>
                 </button>
               </div>
               <FormMessage />
@@ -199,7 +200,7 @@ export function MembershipForm({
               <FormItem>
                 <FormLabel>Prénom</FormLabel>
                 <FormControl>
-                  <Input placeholder="Jean" {...field} />
+                  <Input placeholder="Alexandre" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -212,7 +213,7 @@ export function MembershipForm({
               <FormItem>
                 <FormLabel>Nom</FormLabel>
                 <FormControl>
-                  <Input placeholder="Dupont" {...field} />
+                  <Input placeholder="Tremblay" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -227,7 +228,7 @@ export function MembershipForm({
             <FormItem>
               <FormLabel>Adresse</FormLabel>
               <FormControl>
-                <Input placeholder="123 rue de la Paix" {...field} />
+                <Input placeholder="1234, rue Saint-Denis, Montréal, QC H2X 3J4" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -242,7 +243,7 @@ export function MembershipForm({
               <FormItem>
                 <FormLabel>Téléphone</FormLabel>
                 <FormControl>
-                  <Input placeholder="514-555-1234" {...field} />
+                  <Input placeholder="(514) 555-1234" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -255,7 +256,7 @@ export function MembershipForm({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="jean.dupont@example.com" {...field} />
+                  <Input type="email" placeholder="alexandre.tremblay@gmail.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -279,7 +280,7 @@ export function MembershipForm({
                   <FormItem>
                     <FormLabel>Prénom</FormLabel>
                     <FormControl>
-                      <Input placeholder="Marie" {...field} />
+                      <Input placeholder="Mélanie" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -292,7 +293,7 @@ export function MembershipForm({
                   <FormItem>
                     <FormLabel>Nom</FormLabel>
                     <FormControl>
-                      <Input placeholder="Dupont" {...field} />
+                      <Input placeholder="Gagnon" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -324,7 +325,7 @@ export function MembershipForm({
                       <FormItem className="md:col-span-5">
                         <FormLabel>Prénom</FormLabel>
                         <FormControl>
-                          <Input placeholder="Alice" {...field} />
+                          <Input placeholder="Léa" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -337,7 +338,7 @@ export function MembershipForm({
                       <FormItem className="md:col-span-5">
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
-                          <Input placeholder="Dupont" {...field} />
+                          <Input placeholder="Tremblay" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -493,7 +494,7 @@ export function MembershipForm({
                 </div>
                 <div>
                   <p className="font-semibold text-(--sf-red-800)">
-                    Carte topographique hydrofuge — 10$
+                    Carte topographique hydrofuge — {TOPO_MAP_PRICE}$
                   </p>
                   <p className="text-sm text-zinc-600">
                     Livraison incluse. Carte haute qualité résistante à l&apos;eau.

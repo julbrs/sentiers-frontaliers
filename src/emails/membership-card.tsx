@@ -59,7 +59,7 @@ export default function MembershipCardEmail({
           </Text>
 
           <Text style={styles.paragraph}>
-            Type d&apos;adhésion: {membershipType === "family" ? "Familiale" : "Personnelle"}
+            Type d&apos;adhésion: {membershipType === "family" ? "Familiale" : "Individuelle"}
             <br />
             Date de début: {paidAt.toLocaleDateString("fr-CA")}
             <br />
