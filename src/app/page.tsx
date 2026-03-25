@@ -15,14 +15,16 @@ export default async function Home() {
     <main className="container mx-auto px-4">
       {/* Features Section */}
       <section className="py-12">
-        <h2 className="text-3xl font-bold text-emerald-800 mb-8 text-center">Comment participer</h2>
+        <h2 className="text-3xl font-bold text-(--sf-red-800) mb-8 text-center">
+          Comment participer
+        </h2>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Membership Card */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Heart className="text-emerald-600" />
+                <Heart className="text-(--sf-secondary-700)" />
                 <span>Adhésion</span>
               </CardTitle>
               <CardDescription>Devenez membre de l'organisation</CardDescription>
@@ -34,7 +36,10 @@ export default async function Home() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
+              <Button
+                className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white"
+                asChild
+              >
                 <Link href="/profile">Mon profil</Link>
               </Button>
             </CardFooter>
@@ -44,7 +49,7 @@ export default async function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <DollarSign className="text-emerald-600" />
+                <DollarSign className="text-(--sf-secondary-700)" />
                 <span>Faire un don</span>
               </CardTitle>
               <CardDescription>Soutenez nos initiatives</CardDescription>
@@ -57,7 +62,7 @@ export default async function Home() {
             </CardContent>
             <CardFooter>
               <Button
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full bg-(--sf-secondary-300) text-white"
                 variant="outline"
                 disabled
               >
@@ -70,7 +75,7 @@ export default async function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Users className="text-emerald-600" />
+                <Users className="text-(--sf-secondary-700)" />
                 <span>Nos sentiers</span>
               </CardTitle>
               <CardDescription>Découvrez nos parcours</CardDescription>
@@ -83,7 +88,7 @@ export default async function Home() {
             </CardContent>
             <CardFooter>
               <Button
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full bg-(--sf-secondary-300) text-white"
                 variant="outline"
                 disabled
               >
@@ -96,7 +101,7 @@ export default async function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Mountain className="text-emerald-600" />
+                <Mountain className="text-(--sf-secondary-700)" />
                 <span>À propos</span>
               </CardTitle>
               <CardDescription>En savoir plus</CardDescription>
@@ -109,7 +114,7 @@ export default async function Home() {
             </CardContent>
             <CardFooter>
               <Button
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full bg-(--sf-secondary-300) text-white"
                 variant="outline"
                 disabled
               >

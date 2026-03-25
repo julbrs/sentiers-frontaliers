@@ -11,11 +11,13 @@ import { cn } from "@/lib/utils";
 
 export default function Header() {
   return (
-    <header className="bg-linear-to-r from-emerald-700 to-emerald-600 text-white p-4 shadow-lg">
+    <header className="bg-linear-to-r from-(--sf-red-700) to-(--sf-red-800) text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center gap-4">
         <Link href="/" className="flex items-center gap-3">
           <Image src="/chevron.png" alt="Sentiers Frontaliers" height={50} width={50} />
-          <span className="text-lg font-semibold">Mon espace membre SF</span>
+          <span className="text-lg font-semibold font-(family-name:--font-display)">
+            Mon espace membre SF
+          </span>
         </Link>
 
         <UserButton />
@@ -66,7 +68,11 @@ function UserButton() {
 
   if (!user) {
     return (
-      <Button asChild variant="secondary" className="bg-white text-emerald-700 hover:bg-emerald-50">
+      <Button
+        asChild
+        variant="secondary"
+        className="bg-white text-(--sf-red-700) hover:bg-(--sf-off-white)"
+      >
         <Link href="/login" className="flex items-center gap-2">
           <LogIn size={16} />
           Connexion
@@ -93,7 +99,7 @@ function UserButton() {
         <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white text-gray-900 shadow-xl z-50">
           <div className="border-b px-4 py-3">
             <p className="text-sm font-medium">{displayName}</p>
-            {isAdmin && <p className="text-xs text-emerald-600 font-semibold">Administrateur</p>}
+            {isAdmin && <p className="text-xs text-(--sf-red-700) font-semibold">Administrateur</p>}
           </div>
 
           <div className="py-1">
@@ -101,10 +107,10 @@ function UserButton() {
               <>
                 <Link
                   href="/admin"
-                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-emerald-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-(--sf-off-white) transition-colors"
                   onClick={() => setDropdownOpen(false)}
                 >
-                  <Shield size={16} className="text-emerald-600" />
+                  <Shield size={16} className="text-(--sf-red-700)" />
                   Tableau de bord admin
                 </Link>
                 <hr className="my-1" />

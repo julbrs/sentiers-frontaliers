@@ -165,11 +165,11 @@ export function MembershipForm({
                   className={cn(
                     "rounded-lg border p-4 text-left transition-colors",
                     field.value === "personal"
-                      ? "border-emerald-600 bg-emerald-50"
-                      : "border-zinc-200 hover:border-emerald-400",
+                      ? "border-(--sf-red-700) bg-(--sf-off-white)"
+                      : "border-zinc-200 hover:border-(--sf-red-700)",
                   )}
                 >
-                  <p className="font-semibold text-emerald-800">Personnel</p>
+                  <p className="font-semibold text-(--sf-red-800)">Personnel</p>
                   <p className="text-sm text-zinc-600">42$</p>
                 </button>
                 <button
@@ -178,11 +178,11 @@ export function MembershipForm({
                   className={cn(
                     "rounded-lg border p-4 text-left transition-colors",
                     field.value === "family"
-                      ? "border-emerald-600 bg-emerald-50"
-                      : "border-zinc-200 hover:border-emerald-400",
+                      ? "border-(--sf-red-700) bg-(--sf-off-white)"
+                      : "border-zinc-200 hover:border-(--sf-red-700)",
                   )}
                 >
-                  <p className="font-semibold text-emerald-800">Familial</p>
+                  <p className="font-semibold text-(--sf-red-800)">Familial</p>
                   <p className="text-sm text-zinc-600">65$</p>
                 </button>
               </div>
@@ -269,8 +269,8 @@ export function MembershipForm({
         </div>
 
         {isFamily && (
-          <div className="space-y-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
-            <p className="font-semibold text-emerald-800">2e adulte</p>
+          <div className="space-y-4 rounded-lg border border-(--sf-mist-gray) bg-(--sf-off-white)/50 p-4">
+            <p className="font-semibold text-(--sf-red-800)">2e adulte</p>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -302,7 +302,7 @@ export function MembershipForm({
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-emerald-800">Enfants</p>
+                <p className="font-semibold text-(--sf-red-800)">Enfants</p>
                 <Button
                   type="button"
                   variant="outline"
@@ -378,8 +378,8 @@ export function MembershipForm({
                 className={cn(
                   "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
                   field.value
-                    ? "border-emerald-600 bg-emerald-50"
-                    : "border-zinc-200 hover:border-emerald-400",
+                    ? "border-(--sf-red-700) bg-(--sf-off-white)"
+                    : "border-zinc-200 hover:border-(--sf-red-700)",
                 )}
                 onClick={() => {
                   const nextValue = !field.value;
@@ -392,7 +392,7 @@ export function MembershipForm({
                 <div
                   className={cn(
                     "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
-                    field.value ? "border-emerald-600 bg-emerald-600" : "border-zinc-400",
+                    field.value ? "border-(--sf-red-700) bg-(--sf-red-700)" : "border-zinc-400",
                   )}
                 >
                   {field.value && (
@@ -408,7 +408,7 @@ export function MembershipForm({
                   )}
                 </div>
                 <div className="w-full">
-                  <p className="font-semibold text-emerald-800">
+                  <p className="font-semibold text-(--sf-red-800)">
                     Bonifiez votre adhésion avec un don
                   </p>
                   <p className="mb-2 text-sm text-zinc-600">
@@ -468,15 +468,15 @@ export function MembershipForm({
                 className={cn(
                   "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors",
                   field.value
-                    ? "border-emerald-600 bg-emerald-50"
-                    : "border-zinc-200 hover:border-emerald-400",
+                    ? "border-(--sf-red-700) bg-(--sf-off-white)"
+                    : "border-zinc-200 hover:border-(--sf-red-700)",
                 )}
                 onClick={() => field.onChange(!field.value)}
               >
                 <div
                   className={cn(
                     "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
-                    field.value ? "border-emerald-600 bg-emerald-600" : "border-zinc-400",
+                    field.value ? "border-(--sf-red-700) bg-(--sf-red-700)" : "border-zinc-400",
                   )}
                 >
                   {field.value && (
@@ -492,7 +492,7 @@ export function MembershipForm({
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-emerald-800">
+                  <p className="font-semibold text-(--sf-red-800)">
                     Carte topographique hydrofuge — 10$
                   </p>
                   <p className="text-sm text-zinc-600">
@@ -506,7 +506,7 @@ export function MembershipForm({
 
         <Button
           type="submit"
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white"
           disabled={loading}
         >
           {loading ? "Création de la session Clover..." : "Passer au paiement Clover"}

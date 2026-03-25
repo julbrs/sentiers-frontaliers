@@ -71,14 +71,14 @@ export default function DonationManagement() {
 
   return (
     <>
-      <h2 className="text-3xl font-bold text-emerald-800 mb-6">Gestion des donations</h2>
+      <h2 className="text-3xl font-bold text-(--sf-red-800) mb-6">Gestion des donations</h2>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Add Season Card */}
-        <Card className="border-dashed border-2 border-emerald-300">
+        <Card className="border-dashed border-2 border-(--sf-mist-gray)">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Plus className="text-emerald-600" />
+              <Plus className="text-(--sf-red-700)" />
               <span>Ajouter une année fiscale</span>
             </CardTitle>
             <CardDescription>Créer une nouvelle année fiscale</CardDescription>
@@ -96,7 +96,7 @@ export default function DonationManagement() {
           <Card key={season.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Calendar className="text-emerald-600" />
+                <Calendar className="text-(--sf-red-700)" />
                 <span>{season.name}</span>
               </CardTitle>
               <CardDescription>
@@ -107,7 +107,7 @@ export default function DonationManagement() {
               <p>Gérez les donations et les détails de cette année fiscale.</p>
             </CardContent>
             <CardFooter className="flex gap-2">
-              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
+              <Button className="flex-1 bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white" asChild>
                 <Link
                   href={`/admin/season/${season.id}/donation`}
                   className="flex items-center justify-center gap-2"

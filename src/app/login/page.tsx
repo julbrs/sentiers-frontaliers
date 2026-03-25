@@ -2,7 +2,8 @@
 
 import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Mountain, MailCheck, Loader2 } from "lucide-react";
+import { MailCheck, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,18 +84,23 @@ function LoginForm() {
   const isSending = state === "sending";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-100 px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-(--sf-off-white) via-white to-(--sf-mist-gray) px-4 py-10">
       <div className="w-full max-w-lg">
-        <Card className="shadow-lg border-emerald-100">
+        <Card className="shadow-lg border-(--sf-mist-gray)">
           <CardHeader className="text-center space-y-3">
-            <div className="mx-auto bg-emerald-600 text-white p-3 rounded-full inline-flex items-center justify-center shadow-md">
-              <Mountain size={32} />
-            </div>
-            <CardTitle className="text-2xl font-bold text-emerald-800">
+            <Image
+              src="/chevron.png"
+              className="mx-auto"
+              alt="Sentiers Frontaliers"
+              height={48}
+              width={48}
+            />
+
+            <CardTitle className="text-2xl font-bold text-(--sf-red-800)">
               Sentiers Frontaliers
             </CardTitle>
-            <p className="text-emerald-700 text-sm">
-              Connecte-toi en recevant un lien magique par e-mail.
+            <p className="text-(--sf-secondary-700) text-sm">
+              Connectez-vous en recevant un lien magique par e-mail.
             </p>
           </CardHeader>
 
@@ -113,14 +119,15 @@ function LoginForm() {
                   required
                   disabled={isSending}
                 />
-                <p className="text-xs text-emerald-700">
-                  Nous enverrons un lien valable 5 minutes.
+                <p className="text-xs text-(--sf-secondary-700)">
+                  Nous enverrons un lien valable 5 minutes. Le lien expirera automatiquement pour
+                  votre sécurité.
                 </p>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800)"
                 disabled={isSending}
               >
                 {isSending ? (
@@ -138,20 +145,30 @@ function LoginForm() {
             </form>
 
             {sentTo && state === "sent" && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                Lien envoyé à <span className="font-semibold">{sentTo}</span>. Pense à vérifier tes
+              <div className="rounded-md border border-(--sf-secondary-100) bg-(--sf-secondary-50) px-3 py-2 text-sm text-(--sf-secondary-800)">
+                Lien envoyé à <span className="font-semibold">{sentTo}</span>. Pensez à vérifier vos
                 courriers indésirables.
               </div>
             )}
 
-            <div className="text-xs text-emerald-800 space-y-1">
-              <p>Pas de mot de passe à retenir, juste ton e-mail.</p>
-              <p>Le lien expirera automatiquement pour ta sécurité.</p>
+            <div className="text-xs text-(--sf-secondary-800) space-y-1">
+              <p>
+                Pas de mot de passe à retenir, juste votre e-mail. Un compte sera créé
+                automatiquement si vous n'en avez pas.
+              </p>
             </div>
           </CardContent>
 
-          <CardFooter className="justify-center text-sm text-emerald-700">
-            Besoin d'aide ? Contacte la trésorerie si tu ne reçois pas le lien.
+          <CardFooter className="justify-center text-sm text-(--sf-secondary-700)">
+            Besoin d'aide ?{"\u00A0"}
+            <a
+              href="mailto:info@sentiersfrontaliers.com"
+              className="underline hover:text-(--sf-secondary-900) transition-colors"
+            >
+              Contactez-nous
+            </a>
+            {"\u00A0"}
+            si vous ne recevez pas le lien.
           </CardFooter>
         </Card>
       </div>
@@ -163,7 +180,7 @@ export default function Login() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-(--sf-off-white) via-white to-(--sf-mist-gray)">
           Chargement...
         </div>
       }

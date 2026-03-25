@@ -1,3 +1,29 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --sf-red-700: #8f1f24;
+  --sf-red-800: #7a181d;
+  --sf-red-900: #651216;
+  --sf-secondary-800: #314a5a;
+  --sf-secondary-700: #3f5f73;
+  --sf-secondary-300: #9fb1bd;
+  --sf-secondary-100: #d9e2e8;
+  --sf-secondary-50: #eef3f6;
+  --sf-off-white: #faf8f6;
+  --sf-mist-gray: #e8e6e4;
+}
+
+body {
+  color: #1f2937;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}

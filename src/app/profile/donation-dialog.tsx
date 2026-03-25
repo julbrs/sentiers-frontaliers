@@ -94,7 +94,7 @@ export function DonationDialog({
           <Button
             type="button"
             onClick={handleConfirm}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="bg-(--sf-red-700) hover:bg-(--sf-red-800)"
           >
             Confirmer
           </Button>

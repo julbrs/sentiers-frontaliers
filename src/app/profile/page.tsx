@@ -20,7 +20,7 @@ const statusLabel = {
 
 const statusClassname = {
   pending: "bg-amber-100 text-amber-800",
-  paid: "bg-emerald-100 text-emerald-800",
+  paid: "bg-(--sf-mist-gray) text-(--sf-red-800)",
   failed: "bg-red-100 text-red-800",
   cancelled: "bg-zinc-200 text-zinc-800",
 } as const;
@@ -68,7 +68,7 @@ export default async function ProfilePage({
 
   return (
     <main className="space-y-6">
-      <h1 className="text-4xl font-bold text-emerald-800">Mon profil</h1>
+      <h1 className="text-4xl font-bold text-(--sf-red-800)">Mon profil</h1>
 
       {membership && <ProfileAlert type={membership as "success" | "failed"} />}
 
@@ -76,7 +76,7 @@ export default async function ProfilePage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Heart className="text-emerald-600" />
+              <Heart className="text-(--sf-red-700)" />
               <span>Nouvelle adhésion</span>
             </CardTitle>
             <CardDescription>
@@ -95,7 +95,7 @@ export default async function ProfilePage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <ListChecks className="text-emerald-600" />
+              <ListChecks className="text-(--sf-red-700)" />
               <span>Mes adhésions</span>
             </CardTitle>
             <CardDescription>Historique et statut de vos adhésions</CardDescription>
@@ -176,7 +176,7 @@ export default async function ProfilePage({
                                 <span
                                   className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                                     isActive
-                                      ? "bg-emerald-100 text-emerald-800"
+                                      ? "bg-(--sf-mist-gray) text-(--sf-red-800)"
                                       : "bg-amber-100 text-amber-800"
                                   }`}
                                 >
@@ -203,7 +203,7 @@ export default async function ProfilePage({
                       item.cloverCheckoutUrl && (
                         <a
                           href={item.cloverCheckoutUrl}
-                          className="mt-2 inline-block text-sm font-medium text-emerald-700 underline"
+                          className="mt-2 inline-block text-sm font-medium text-(--sf-red-700) underline"
                         >
                           Reprendre le paiement
                         </a>
