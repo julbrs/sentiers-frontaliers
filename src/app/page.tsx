@@ -13,15 +13,6 @@ import Link from "next/link";
 export default async function Home() {
   return (
     <main className="container mx-auto px-4">
-      {/* Hero Section */}
-      <section className="py-16 text-center">
-        <h1 className="text-5xl font-bold text-emerald-800 mb-4">Sentiers Frontaliers</h1>
-        <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-          Un réseau de 140+ km de sentiers de randonnée entre le Canada et les USA. Rejoignez notre
-          communauté et soutenez la préservation de ces magnifiques chemins.
-        </p>
-      </section>
-
       {/* Features Section */}
       <section className="py-12">
         <h2 className="text-3xl font-bold text-emerald-800 mb-8 text-center">Comment participer</h2>

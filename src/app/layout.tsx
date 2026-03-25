@@ -6,9 +6,9 @@ import { Footer } from "./footer";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Finances Sentiers Frontaliers - Réseau de Sentiers",
+  title: "Mon Sentiers Frontaliers",
   description:
-    "Gestion financière d'un réseau de 140+ km de sentiers de randonnée entre le Canada et les USA",
+    "Gérez votre adhésion, consultez l'historique de vos commandes et restez informé des dernières nouvelles concernant les Sentiers Frontaliers.",
 };
 
 export default function RootLayout({

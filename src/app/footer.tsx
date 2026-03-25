@@ -1,4 +1,4 @@
-import { Facebook, Globe, Mountain } from "lucide-react";
+import { Facebook, Globe, Mail, Mountain } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
@@ -8,14 +8,13 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center">
           <div className="text-emerald-100 text-sm mb-4 sm:mb-0">
             <div className="flex items-center gap-2 mb-2">
-              <Mountain size={18} className="text-amber-400" />
               <span className="font-semibold">Sentiers Frontaliers</span>
             </div>
-            © {new Date().getFullYear()} Réseau de 140+ km entre Canada et USA
+            © {new Date().getFullYear()}
           </div>
           <div className="flex space-x-6">
             <Link
-              href="#"
+              href="https://sentiersfrontaliers.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-emerald-200 hover:text-amber-300 transition-colors"
@@ -25,7 +24,7 @@ export function Footer() {
               <Globe className="h-6 w-6" />
             </Link>
             <Link
-              href="#"
+              href="https://www.facebook.com/profile.php?id=100089450023385"
               target="_blank"
               rel="noopener noreferrer"
               className="text-emerald-200 hover:text-amber-300 transition-colors"
@@ -33,6 +32,16 @@ export function Footer() {
             >
               <span className="sr-only">Groupe Facebook</span>
               <Facebook className="h-6 w-6" />
+            </Link>
+            <Link
+              href="mailto:info@sentiersfrontaliers.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-200 hover:text-amber-300 transition-colors"
+              aria-label="Email"
+            >
+              <span className="sr-only">Email</span>
+              <Mail className="h-6 w-6" />
             </Link>
           </div>
         </div>

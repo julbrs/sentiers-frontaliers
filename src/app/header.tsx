@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { LogIn, LogOut, Mountain, User, Shield, ChevronDown } from "lucide-react";
+import { LogIn, LogOut, User, Shield, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -10,16 +11,11 @@ import { cn } from "@/lib/utils";
 
 export default function Header() {
   return (
-    <header className="bg-gradient-to-r from-emerald-700 to-emerald-600 text-white p-4 shadow-lg">
+    <header className="bg-linear-to-r from-emerald-700 to-emerald-600 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center gap-4">
-        <Link href="/">
-          <div className="flex items-center space-x-3">
-            <Mountain size={32} className="text-amber-300" />
-            <div>
-              <h1 className="text-2xl font-bold">Sentiers Frontaliers</h1>
-              <p className="text-sm text-emerald-100">Finances - Trail Network</p>
-            </div>
-          </div>
+        <Link href="/" className="flex items-center gap-3">
+          <Image src="/chevron.png" alt="Sentiers Frontaliers" height={50} width={50} />
+          <span className="text-lg font-semibold">Mon espace membre SF</span>
         </Link>
 
         <UserButton />
