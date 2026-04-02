@@ -122,7 +122,8 @@ function LoginForm() {
               Sentiers Frontaliers
             </CardTitle>
             <p className="text-(--sf-secondary-700) text-sm">
-              Connectez-vous en recevant un lien magique par e-mail.
+              Il est nécessaire de se connecter pour gérer vos adhésions et dons. Vous recevrez un
+              lien magique par e-mail.
             </p>
           </CardHeader>
 
