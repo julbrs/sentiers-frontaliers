@@ -48,7 +48,7 @@ const formSchema = z
     phone: z.string().optional(),
     address: z.string().optional(),
     amount: z.coerce.number().positive("Le montant doit être supérieur à 0"),
-    paymentType: z.enum(["cash", "check", "bank_transfer", "other"]),
+    paymentType: z.enum(["cash", "check", "bank_transfer", "card", "other"]),
     date: z.string().min(1, "La date est requise"),
     notes: z.string().optional(),
   })
@@ -361,6 +361,7 @@ export function DonationDialog({
                         <SelectItem value="cash">Espèces</SelectItem>
                         <SelectItem value="check">Chèque</SelectItem>
                         <SelectItem value="bank_transfer">Virement</SelectItem>
+                        <SelectItem value="card">Carte</SelectItem>
                         <SelectItem value="other">Autre</SelectItem>
                       </SelectContent>
                     </Select>

@@ -1,5 +1,13 @@
 import { db } from "@/db/drizzle";
-import { donation, contact, season, donationReceipt } from "@/db/schema";
+import {
+  donation,
+  contact,
+  season,
+  donationReceipt,
+  invoiceLine,
+  invoice,
+  payment,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 import TaxReceiptEmail from "@/emails/donation-receipt";
 import { render } from "@react-email/components";
@@ -43,8 +51,9 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
     .select({
       id: donation.id,
       amount: donation.amount,
-      paymentType: donation.paymentType,
       date: donation.date,
+      billedAmount: invoiceLine.amount,
+      paymentDate: payment.paymentDate,
       notes: donation.notes,
       seasonName: season.name,
       contactFirstName: contact.firstName,
@@ -55,6 +64,9 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
     .from(donation)
     .innerJoin(contact, eq(donation.donatorId, contact.id))
     .innerJoin(season, eq(donation.seasonId, season.id))
+    .leftJoin(invoiceLine, eq(invoiceLine.donationId, donation.id))
+    .leftJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
+    .leftJoin(payment, eq(payment.invoiceId, invoice.id))
     .where(eq(donation.id, donationId))
     .limit(1);
 
@@ -63,7 +75,8 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
   }
 
   const record = rows[0];
-  const amountNumber = Number(record.amount);
+  const amountNumber = Number(record.billedAmount ?? record.amount);
+  const donationDate = record.paymentDate ?? record.date;
 
   if (!record.contactEmail) {
     return jsonResponse({ error: "Adresse email manquante pour ce contact" }, 400);
@@ -122,7 +135,7 @@ export async function POST(_request: Request, props: { params: Promise<{ id: str
         donorLastName={record.contactLastName}
         address={record.contactAddress}
         amount={amountNumber}
-        date={record.date}
+        date={donationDate}
         seasonName={record.seasonName}
         donationId={donationId}
         logoDataUri={logoDataUri}

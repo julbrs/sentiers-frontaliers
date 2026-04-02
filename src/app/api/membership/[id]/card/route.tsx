@@ -4,7 +4,7 @@ import { and, asc, eq } from "drizzle-orm";
 
 import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
-import { membership, membershipChild } from "@/db/schema";
+import { invoice, invoiceLine, membership, membershipChild } from "@/db/schema";
 import { requireSession } from "@/lib/auth-server";
 
 const jsonResponse = (body: Record<string, unknown>, status = 200) =>
@@ -57,9 +57,11 @@ export async function GET(_request: Request, props: { params: Promise<{ id: stri
       lastName: membership.lastName,
       secondAdultFirstName: membership.secondAdultFirstName,
       secondAdultLastName: membership.secondAdultLastName,
-      paidAt: membership.paidAt,
+      paidAt: invoice.paidAt,
     })
     .from(membership)
+    .leftJoin(invoiceLine, eq(invoiceLine.membershipId, membership.id))
+    .leftJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
     .where(and(eq(membership.id, membershipId), eq(membership.userId, session.user.id)))
     .limit(1);
 

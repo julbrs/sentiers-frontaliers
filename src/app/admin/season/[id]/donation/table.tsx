@@ -39,6 +39,7 @@ const paymentTypeLabel: Record<string, string> = {
   cash: "Espèces",
   check: "Chèque",
   bank_transfer: "Virement",
+  card: "Carte",
   other: "Autre",
 };
 

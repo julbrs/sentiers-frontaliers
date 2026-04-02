@@ -11,7 +11,8 @@ import MembershipCardEmail from "@/emails/membership-card";
 import OrderNotificationEmail from "@/emails/order-notification";
 import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
-import { membership, membershipChild } from "@/db/schema";
+import { invoice, invoiceLine, membership, membershipChild, payment } from "@/db/schema";
+import { TOPO_MAP_PRICE } from "@/constants";
 
 const ses = new SES();
 
@@ -27,8 +28,6 @@ interface CloverWebhookPayload {
   message: string;
   checkoutSessionId: string;
 }
-
-const TOPO_MAP_PRICE = 25;
 
 const loadLogoDataUri = (): string | undefined => {
   try {
@@ -251,11 +250,50 @@ export async function POST(request: NextRequest) {
   );
 
   if (payload.status === "APPROVED") {
+    const paymentRows = await db
+      .select({
+        id: payment.id,
+        invoiceId: payment.invoiceId,
+      })
+      .from(payment)
+      .where(eq(payment.providerSessionId, checkoutSessionId))
+      .limit(1);
+
+    if (paymentRows.length === 0) {
+      console.warn(`[clover/webhook] No payment found for checkout session ${checkoutSessionId}`);
+      return NextResponse.json({ received: true });
+    }
+
+    const paymentRecord = paymentRows[0];
+    const paidAt = new Date();
+
+    await db
+      .update(invoice)
+      .set({
+        status: "paid",
+        paidAt,
+      })
+      .where(eq(invoice.id, paymentRecord.invoiceId));
+
+    const paymentDate = new Date().toISOString().slice(0, 10);
+    await db
+      .update(payment)
+      .set({
+        status: "approved",
+        paymentType: "card",
+        provider: "clover",
+        providerPaymentId: payload.id,
+        providerSessionId: checkoutSessionId,
+        paymentDate,
+        paidAt,
+      })
+      .where(eq(payment.id, paymentRecord.id));
+
     const rows = await db
       .select({
+        invoiceId: invoice.id,
         id: membership.id,
         status: membership.status,
-        paidAt: membership.paidAt,
         type: membership.type,
         firstName: membership.firstName,
         lastName: membership.lastName,
@@ -265,30 +303,41 @@ export async function POST(request: NextRequest) {
         secondAdultLastName: membership.secondAdultLastName,
         email: membership.email,
         price: membership.price,
-        donationAmount: membership.donationAmount,
-        topoMapOrder: membership.topoMapOrder,
       })
-      .from(membership)
-      .where(eq(membership.cloverCheckoutId, checkoutSessionId))
+      .from(invoice)
+      .innerJoin(invoiceLine, eq(invoiceLine.invoiceId, invoice.id))
+      .innerJoin(membership, eq(membership.id, invoiceLine.membershipId))
+      .where(eq(invoice.id, paymentRecord.invoiceId))
       .limit(1);
 
     if (rows.length === 0) {
-      console.warn(
-        `[clover/webhook] No membership found for checkout session ${checkoutSessionId}`,
+      console.log(
+        `[clover/webhook] Invoice ${paymentRecord.invoiceId} paid without membership line (likely donation-only)`,
       );
       return NextResponse.json({ received: true });
     }
 
     const membershipRecord = rows[0];
-    const paidAt = membershipRecord.paidAt ?? new Date();
 
     await db
       .update(membership)
       .set({
         status: "paid",
-        paidAt,
       })
-      .where(eq(membership.cloverCheckoutId, checkoutSessionId));
+      .where(eq(membership.id, membershipRecord.id));
+
+    const lineRows = await db
+      .select({
+        type: invoiceLine.type,
+        amount: invoiceLine.amount,
+      })
+      .from(invoiceLine)
+      .where(eq(invoiceLine.invoiceId, membershipRecord.invoiceId));
+
+    const membershipLineAmount =
+      lineRows.find((line) => line.type === "membership")?.amount ?? membershipRecord.price;
+    const donationLineAmount = lineRows.find((line) => line.type === "donation")?.amount ?? "0";
+    const hasTopoMapLine = lineRows.some((line) => line.type === "topo_map");
 
     const children = await db
       .select({
@@ -332,11 +381,9 @@ export async function POST(request: NextRequest) {
         phone: membershipRecord.phone,
         email: membershipRecord.email,
         membershipType: membershipRecord.type,
-        membershipPrice: Number(membershipRecord.price),
-        donationAmount: membershipRecord.donationAmount
-          ? Number(membershipRecord.donationAmount)
-          : 0,
-        topoMapOrder: membershipRecord.topoMapOrder,
+        membershipPrice: Number(membershipLineAmount),
+        donationAmount: Number(donationLineAmount),
+        topoMapOrder: hasTopoMapLine,
         paidAt,
       });
       console.log(
@@ -354,10 +401,52 @@ export async function POST(request: NextRequest) {
       `[clover/webhook] Membership marked as paid for checkout session ${checkoutSessionId}`,
     );
   } else if (payload.status === "DECLINED") {
+    const paymentRows = await db
+      .select({
+        id: payment.id,
+        invoiceId: payment.invoiceId,
+      })
+      .from(payment)
+      .where(eq(payment.providerSessionId, checkoutSessionId))
+      .limit(1);
+
+    if (paymentRows.length === 0) {
+      console.warn(`[clover/webhook] No payment found for checkout session ${checkoutSessionId}`);
+      return NextResponse.json({ received: true });
+    }
+
+    const paymentRecord = paymentRows[0];
+
     await db
-      .update(membership)
+      .update(invoice)
       .set({ status: "failed" })
-      .where(eq(membership.cloverCheckoutId, checkoutSessionId));
+      .where(eq(invoice.id, paymentRecord.invoiceId));
+
+    await db
+      .update(payment)
+      .set({
+        status: "declined",
+        provider: "clover",
+        providerPaymentId: payload.id,
+        providerSessionId: checkoutSessionId,
+      })
+      .where(eq(payment.id, paymentRecord.id));
+
+    const membershipRows = await db
+      .select({
+        membershipId: membership.id,
+      })
+      .from(invoiceLine)
+      .innerJoin(membership, eq(membership.id, invoiceLine.membershipId))
+      .where(eq(invoiceLine.invoiceId, paymentRecord.invoiceId))
+      .limit(1);
+
+    if (membershipRows[0]) {
+      await db
+        .update(membership)
+        .set({ status: "failed" })
+        .where(eq(membership.id, membershipRows[0].membershipId));
+    }
 
     console.log(
       `[clover/webhook] Membership marked as failed for checkout session ${checkoutSessionId}`,
