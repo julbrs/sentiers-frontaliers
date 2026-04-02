@@ -6,12 +6,21 @@ import { SES } from "@aws-sdk/client-ses";
 import { render } from "@react-email/components";
 import ReactPDF from "@react-pdf/renderer";
 import { createMimeMessage } from "mimetext";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import MembershipCardEmail from "@/emails/membership-card";
 import OrderNotificationEmail from "@/emails/order-notification";
 import { MembershipCardPdf } from "@/components/membership/membership-card";
 import { db } from "@/db/drizzle";
-import { invoice, invoiceLine, membership, membershipChild, payment } from "@/db/schema";
+import {
+  contact,
+  donation,
+  invoice,
+  invoiceLine,
+  membership,
+  membershipChild,
+  payment,
+  season,
+} from "@/db/schema";
 import { TOPO_MAP_PRICE } from "@/constants";
 
 const ses = new SES();
@@ -192,6 +201,195 @@ function verifyCloverSignature(
   }
 }
 
+async function createDonationRecordIfEligible(params: { invoiceId: number; paymentDate: string }) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const resolveSeasonId = async (preferredSeasonId: number | null) => {
+    if (preferredSeasonId) {
+      return preferredSeasonId;
+    }
+
+    const [currentSeason] = await db
+      .select({ id: season.id })
+      .from(season)
+      .where(and(lte(season.startDate, today), gte(season.endDate, today)))
+      .orderBy(desc(season.startDate), desc(season.id))
+      .limit(1);
+
+    if (currentSeason) {
+      return currentSeason.id;
+    }
+
+    const [latestSeason] = await db
+      .select({ id: season.id })
+      .from(season)
+      .orderBy(desc(season.endDate), desc(season.id))
+      .limit(1);
+
+    return latestSeason?.id ?? null;
+  };
+
+  const getMembershipContactId = async () => {
+    const [membershipRow] = await db
+      .select({
+        firstName: membership.firstName,
+        lastName: membership.lastName,
+        email: membership.email,
+        phone: membership.phone,
+        address: membership.address,
+      })
+      .from(invoiceLine)
+      .innerJoin(membership, eq(membership.id, invoiceLine.membershipId))
+      .where(eq(invoiceLine.invoiceId, params.invoiceId))
+      .limit(1);
+
+    if (!membershipRow?.email) {
+      return null;
+    }
+
+    const [existingContact] = await db
+      .select({ id: contact.id })
+      .from(contact)
+      .where(sql`lower(${contact.email}) = lower(${membershipRow.email})`)
+      .limit(1);
+
+    if (existingContact) {
+      await db
+        .update(contact)
+        .set({
+          firstName: membershipRow.firstName,
+          lastName: membershipRow.lastName,
+          email: membershipRow.email,
+          phone: membershipRow.phone,
+          address: membershipRow.address,
+        })
+        .where(eq(contact.id, existingContact.id));
+
+      return existingContact.id;
+    }
+
+    const [createdContact] = await db
+      .insert(contact)
+      .values({
+        firstName: membershipRow.firstName,
+        lastName: membershipRow.lastName,
+        email: membershipRow.email,
+        phone: membershipRow.phone,
+        address: membershipRow.address,
+      })
+      .returning({ id: contact.id });
+
+    return createdContact.id;
+  };
+
+  const [invoiceRow] = await db
+    .select({
+      id: invoice.id,
+      source: invoice.source,
+      contactId: invoice.contactId,
+      seasonId: invoice.seasonId,
+    })
+    .from(invoice)
+    .where(eq(invoice.id, params.invoiceId))
+    .limit(1);
+
+  if (!invoiceRow || (invoiceRow.source !== "donation" && invoiceRow.source !== "membership")) {
+    return;
+  }
+
+  const [donationLine] = await db
+    .select({
+      lineId: invoiceLine.id,
+      amount: invoiceLine.amount,
+      donationId: invoiceLine.donationId,
+    })
+    .from(invoiceLine)
+    .where(and(eq(invoiceLine.invoiceId, params.invoiceId), eq(invoiceLine.type, "donation")))
+    .limit(1);
+
+  if (!donationLine || donationLine.donationId) {
+    return;
+  }
+
+  const donationAmount = Number(donationLine.amount);
+  if (donationAmount < 20) {
+    console.log(
+      `[clover/webhook] Donation invoice ${params.invoiceId} paid but amount < 20$, skipping donation registry`,
+    );
+    return;
+  }
+
+  const seasonId = await resolveSeasonId(invoiceRow.seasonId);
+  if (!seasonId) {
+    console.warn(
+      `[clover/webhook] Invoice ${params.invoiceId} has no resolvable season, skipping donation registry`,
+    );
+    return;
+  }
+
+  let contactId = invoiceRow.contactId;
+
+  if (invoiceRow.source === "membership") {
+    const membershipContactId = await getMembershipContactId();
+    if (membershipContactId) {
+      contactId = membershipContactId;
+    }
+  }
+
+  if (!contactId) {
+    console.warn(
+      `[clover/webhook] Invoice ${params.invoiceId} has no contact for donation registry, skipping`,
+    );
+    return;
+  }
+
+  const [contactRow] = await db
+    .select({ id: contact.id })
+    .from(contact)
+    .where(eq(contact.id, contactId))
+    .limit(1);
+
+  if (!contactRow) {
+    console.warn(
+      `[clover/webhook] Invoice ${params.invoiceId} contact not found, skipping donation registry`,
+    );
+    return;
+  }
+
+  if (invoiceRow.contactId !== contactId || invoiceRow.seasonId !== seasonId) {
+    await db
+      .update(invoice)
+      .set({
+        contactId,
+        seasonId,
+      })
+      .where(eq(invoice.id, params.invoiceId));
+  }
+
+  const [createdDonation] = await db
+    .insert(donation)
+    .values({
+      amount: donationAmount.toFixed(2),
+      paymentType: "card",
+      date: params.paymentDate,
+      donatorId: contactId,
+      seasonId,
+      notes:
+        invoiceRow.source === "membership"
+          ? "Don lors d'une adhésion en ligne via Clover"
+          : "Don en ligne via Clover",
+    })
+    .returning({ id: donation.id });
+
+  await db
+    .update(invoiceLine)
+    .set({ donationId: createdDonation.id })
+    .where(eq(invoiceLine.id, donationLine.lineId));
+  console.log(
+    `[clover/webhook] Donation #${createdDonation.id} created for invoice ${params.invoiceId}`,
+  );
+}
+
 export async function POST(request: NextRequest) {
   const signingSecret = process.env.CLOVER_WEBHOOK_SECRET;
   const isDev = process.env.NODE_ENV === "development";
@@ -289,6 +487,11 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(payment.id, paymentRecord.id));
 
+    await createDonationRecordIfEligible({
+      invoiceId: paymentRecord.invoiceId,
+      paymentDate,
+    });
+
     const rows = await db
       .select({
         invoiceId: invoice.id,
@@ -312,7 +515,7 @@ export async function POST(request: NextRequest) {
 
     if (rows.length === 0) {
       console.log(
-        `[clover/webhook] Invoice ${paymentRecord.invoiceId} paid without membership line (likely donation-only)`,
+        `[clover/webhook] Invoice ${paymentRecord.invoiceId} paid without membership line`,
       );
       return NextResponse.json({ received: true });
     }
@@ -448,9 +651,7 @@ export async function POST(request: NextRequest) {
         .where(eq(membership.id, membershipRows[0].membershipId));
     }
 
-    console.log(
-      `[clover/webhook] Membership marked as failed for checkout session ${checkoutSessionId}`,
-    );
+    console.log(`[clover/webhook] Payment declined for checkout session ${checkoutSessionId}`);
   } else {
     console.log(`[clover/webhook] Unhandled status: ${payload.status}`);
   }

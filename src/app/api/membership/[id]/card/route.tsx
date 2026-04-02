@@ -44,7 +44,7 @@ export async function GET(_request: Request, props: { params: Promise<{ id: stri
   const membershipId = Number(id);
 
   if (Number.isNaN(membershipId)) {
-    return jsonResponse({ error: "Identifiant d'adhesion invalide" }, 400);
+    return jsonResponse({ error: "Identifiant d'adhésion invalide" }, 400);
   }
 
   const rows = await db
@@ -66,17 +66,17 @@ export async function GET(_request: Request, props: { params: Promise<{ id: stri
     .limit(1);
 
   if (rows.length === 0) {
-    return jsonResponse({ error: "Adhesion introuvable" }, 404);
+    return jsonResponse({ error: "Adhésion introuvable" }, 404);
   }
 
   const record = rows[0];
 
   if (record.status !== "paid" || !record.paidAt) {
-    return jsonResponse({ error: "Cette adhesion n'est pas active" }, 403);
+    return jsonResponse({ error: "Cette adhésion n'est pas active" }, 403);
   }
 
   if (!isMembershipActive(record.paidAt)) {
-    return jsonResponse({ error: "Cette adhesion est expiree" }, 403);
+    return jsonResponse({ error: "Cette adhésion est expirée" }, 403);
   }
 
   const children = await db

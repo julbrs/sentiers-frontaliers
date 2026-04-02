@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, UserCog } from "lucide-react";
+import { DollarSign, ReceiptText, Users, UserCog } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -69,6 +69,26 @@ export default function AdminDashboard() {
           <CardFooter>
             <Button className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white" asChild>
               <Link href="/admin/user">Accéder</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <ReceiptText className="text-(--sf-red-700)" />
+              <span>Résumé des ventes Clover</span>
+            </CardTitle>
+            <CardDescription>Exporter un rapport PDF pour la comptabilité</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Générez un tableau de conciliation bancaire entre deux dates avec frais optionnels.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white" asChild>
+              <Link href="/admin/sales-summary">Accéder</Link>
             </Button>
           </CardFooter>
         </Card>

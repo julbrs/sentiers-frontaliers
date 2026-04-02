@@ -62,11 +62,10 @@ export default async function Home() {
             </CardContent>
             <CardFooter>
               <Button
-                className="w-full bg-(--sf-secondary-300) text-white"
-                variant="outline"
-                disabled
+                className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white"
+                asChild
               >
-                Bientot disponible
+                <Link href="/don">Faire un don</Link>
               </Button>
             </CardFooter>
           </Card>

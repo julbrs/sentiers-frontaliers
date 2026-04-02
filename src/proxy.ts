@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
   const isAdminRoute = pathname.startsWith("/admin");
   const isProfileRoute = pathname.startsWith("/profile");
-  const requiresAuthentication = isAdminRoute || isProfileRoute;
+  const isDonationRoute = pathname.startsWith("/don");
+  const requiresAuthentication = isAdminRoute || isProfileRoute || isDonationRoute;
 
   if (!requiresAuthentication) {
     return NextResponse.next();

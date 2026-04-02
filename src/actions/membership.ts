@@ -52,7 +52,7 @@ const membershipInputSchema = z
     if (!values.children || values.children.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Au moins un enfant est requis pour une adhesion familiale",
+        message: "Au moins un enfant est requis pour une adhésion familiale",
         path: ["children"],
       });
     }
@@ -127,7 +127,7 @@ async function createCloverHostedCheckout(params: {
 
   const lineItems = [
     {
-      name: params.membershipType === "family" ? "Adhesion familiale" : "Adhesion ind",
+      name: params.membershipType === "family" ? "Adhésion familiale" : "Adhésion individuelle",
       note: `Membership #${params.membershipId} - ${params.fullName}`,
       price: membershipAmountInCents,
       unitQty: 1,
@@ -271,7 +271,7 @@ export const createMembershipCheckout = async (input: CreateMembershipInput) => 
     await db.insert(invoiceLine).values({
       invoiceId: createdInvoice.id,
       type: "membership",
-      label: parsed.type === "family" ? "Adhesion familiale" : "Adhesion individuelle",
+      label: parsed.type === "family" ? "Adhésion familiale" : "Adhésion individuelle",
       quantity: 1,
       unitPrice: amount.toFixed(2),
       amount: amount.toFixed(2),

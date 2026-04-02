@@ -21,7 +21,7 @@ npx drizzle-kit migrate
 
 ## Clover - Hosted Checkout (sandbox)
 
-Cette app utilise Clover Hosted Checkout pour le paiement des adhesions.
+Cette app utilise Clover Hosted Checkout pour le paiement des adhésions.
 
 ### 1) Cote Clover Dev Dashboard (developpeur)
 
@@ -54,14 +54,14 @@ Si l'app est supprimée du merchant test, le checkout peut s'ouvrir mais échoue
 1. Creation session checkout: OK (retour `href` + `checkoutSessionId`).
 2. Paiement sur page Clover: OK.
 3. Webhook `PAYMENT APPROVED` reçu: OK.
-4. Adhesion marquee `paid` en base: OK.
+4. Adhésion marquée `paid` en base: OK.
 
 ### 5) Erreur courante
 
 Message: `Payment source is missing.`
 
-Points a verifier en priorité:
+Points à vérifier en priorité:
 
 1. L'app Clover est bien installée sur le merchant test.
-2. Le token et le merchant correspondent au meme compte sandbox.
+2. Le token et le merchant correspondent au même compte sandbox.
 3. Test en navigation privée (sans extensions) et avec une carte de test Clover (pas une carte Stripe `4242...`).
