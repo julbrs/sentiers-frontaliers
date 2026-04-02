@@ -66,7 +66,7 @@ function LoginForm() {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) {
       toast.error("Adresse e-mail requise", {
-        description: "Indique une adresse pour recevoir ton lien de connexion.",
+        description: "Indiquez une adresse pour recevoir votre lien de connexion.",
       });
       return;
     }
@@ -89,7 +89,7 @@ function LoginForm() {
       setSentTo(trimmed);
       setState("sent");
       toast("Lien envoyé", {
-        description: "Consulte ta boîte mail. Le lien est valable 5 minutes.",
+        description: "Consultez votre boîte mail. Le lien est valable 5 minutes.",
       });
     } catch (error) {
       const description = error instanceof Error ? error.message : "Une erreur est survenue.";
