@@ -107,7 +107,10 @@ const PRODUCT_TITLES: Record<SalesSummaryProductLine["accountNumber"], string> =
 const toCents = (value: number) => Math.round(value * 100);
 const fromCents = (value: number) => value / 100;
 
-function resolveAccountNumber(lineType: string, membershipType: "personal" | "family" | null) {
+function resolveAccountNumber(
+  lineType: string,
+  membershipType: "personal" | "family" | "corporate" | null,
+) {
   if (lineType === "membership") {
     return membershipType === "family" ? "4006" : "4005";
   }

@@ -3,7 +3,7 @@ import { Document, Page, StyleSheet, Text, View, Image } from "@react-pdf/render
 export type MembershipCardPdfProps = {
   firstName: string;
   lastName: string;
-  type: "personal" | "family";
+  type: "personal" | "family" | "corporate";
   paidAt: Date;
   secondAdultFirstName?: string | null;
   secondAdultLastName?: string | null;
@@ -283,7 +283,8 @@ export const MembershipCardPdf = ({
   const expiryDate = new Date(paidAt);
   expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
-  const typeLabel = type === "family" ? "Famille" : "Individuel";
+  const typeLabel =
+    type === "family" ? "Famille" : type === "corporate" ? "Corporatif" : "Individuel";
 
   return (
     <Document title="Carte de membre Sentiers Frontaliers">

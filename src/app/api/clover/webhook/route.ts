@@ -53,7 +53,7 @@ const sendMembershipCardEmail = async (params: {
   firstName: string;
   lastName: string;
   membershipId: number;
-  membershipType: "personal" | "family";
+  membershipType: "personal" | "family" | "corporate";
   paidAt: Date;
   secondAdultFirstName: string | null;
   secondAdultLastName: string | null;
@@ -118,7 +118,7 @@ const sendOrderNotificationEmail = async (params: {
   address: string;
   phone: string;
   email: string;
-  membershipType: "personal" | "family";
+  membershipType: "personal" | "family" | "corporate";
   membershipPrice: number;
   donationAmount: number;
   topoMapOrder: boolean;

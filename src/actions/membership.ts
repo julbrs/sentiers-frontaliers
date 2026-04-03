@@ -16,7 +16,7 @@ const childSchema = z.object({
 
 const membershipInputSchema = z
   .object({
-    type: z.enum(["personal", "family"]),
+    type: z.enum(["personal", "family", "corporate"]),
     firstName: z.string().trim().min(1, "Le prenom est requis"),
     lastName: z.string().trim().min(1, "Le nom est requis"),
     address: z.string().trim().min(1, "L'adresse est requise"),
@@ -127,7 +127,12 @@ async function createCloverHostedCheckout(params: {
 
   const lineItems = [
     {
-      name: params.membershipType === "family" ? "Adhésion familiale" : "Adhésion individuelle",
+      name:
+        params.membershipType === "family"
+          ? "Adhésion familiale"
+          : params.membershipType === "corporate"
+            ? "Adhésion corporative"
+            : "Adhésion individuelle",
       note: `Membership #${params.membershipId} - ${params.fullName}`,
       price: membershipAmountInCents,
       unitQty: 1,
@@ -271,7 +276,12 @@ export const createMembershipCheckout = async (input: CreateMembershipInput) => 
     await db.insert(invoiceLine).values({
       invoiceId: createdInvoice.id,
       type: "membership",
-      label: parsed.type === "family" ? "Adhésion familiale" : "Adhésion individuelle",
+      label:
+        parsed.type === "family"
+          ? "Adhésion familiale"
+          : parsed.type === "corporate"
+            ? "Adhésion corporative"
+            : "Adhésion individuelle",
       quantity: 1,
       unitPrice: amount.toFixed(2),
       amount: amount.toFixed(2),

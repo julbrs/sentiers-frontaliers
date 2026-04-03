@@ -17,7 +17,7 @@ type OrderNotificationEmailProps = {
   address: string;
   phone: string;
   email: string;
-  membershipType: "personal" | "family";
+  membershipType: "personal" | "family" | "corporate";
   membershipPrice: number;
   donationAmount: number;
   topoMapOrder: boolean;
@@ -159,7 +159,12 @@ export default function OrderNotificationEmail({
           <Section>
             <Row style={styles.lineItemRow}>
               <Column style={{ ...styles.valueCell, flex: 1 }}>
-                Adhésion {membershipType === "family" ? "familiale" : "individuelle"}
+                Adhésion{" "}
+                {membershipType === "family"
+                  ? "familiale"
+                  : membershipType === "corporate"
+                    ? "corporative"
+                    : "individuelle"}
               </Column>
               <Column style={{ ...styles.valueCell, textAlign: "right" as const, width: "80px" }}>
                 {membershipPrice.toFixed(2)} $

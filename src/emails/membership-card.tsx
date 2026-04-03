@@ -3,7 +3,7 @@ import { Body, Container, Head, Html, Section, Text } from "@react-email/compone
 type MembershipCardEmailProps = {
   firstName: string;
   lastName: string;
-  membershipType: "personal" | "family";
+  membershipType: "personal" | "family" | "corporate";
   paidAt: Date;
 };
 
@@ -59,7 +59,12 @@ export default function MembershipCardEmail({
           </Text>
 
           <Text style={styles.paragraph}>
-            Type d&apos;adhésion: {membershipType === "family" ? "Familiale" : "Individuelle"}
+            Type d&apos;adhésion:{" "}
+            {membershipType === "family"
+              ? "Familiale"
+              : membershipType === "corporate"
+                ? "Corporative"
+                : "Individuelle"}
             <br />
             Date de début: {paidAt.toLocaleDateString("fr-CA")}
             <br />

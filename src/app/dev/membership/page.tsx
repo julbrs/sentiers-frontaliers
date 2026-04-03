@@ -28,7 +28,7 @@ const PDFViewer = dynamic(() => import("@react-pdf/renderer").then((mod) => mod.
 interface FormState {
   firstName: string;
   lastName: string;
-  type: "personal" | "family";
+  type: "personal" | "family" | "corporate";
   secondAdultFirstName: string;
   secondAdultLastName: string;
   child1FirstName: string;
@@ -84,7 +84,7 @@ export default function MembershipCardPreviewPage() {
     setForm((prev) => ({ ...prev, [key]: event.target.value }));
   };
 
-  const onTypeChange = (value: "personal" | "family") => {
+  const onTypeChange = (value: "personal" | "family" | "corporate") => {
     setForm((prev) => ({ ...prev, type: value }));
   };
 
@@ -146,6 +146,7 @@ export default function MembershipCardPreviewPage() {
               <SelectContent>
                 <SelectItem value="personal">Individuel</SelectItem>
                 <SelectItem value="family">Famille</SelectItem>
+                <SelectItem value="corporate">Corporatif</SelectItem>
               </SelectContent>
             </Select>
           </div>

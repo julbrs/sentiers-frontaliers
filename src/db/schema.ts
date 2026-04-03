@@ -174,7 +174,7 @@ export const donationReceipt = pgTable(
   (table) => [uniqueIndex("tax_receipt_donation_unique").on(table.donationId)],
 );
 
-export const membershipTypeEnum = pgEnum("membership_type", ["personal", "family"]);
+export const membershipTypeEnum = pgEnum("membership_type", ["personal", "family", "corporate"]);
 
 export const membershipStatusEnum = pgEnum("membership_status", [
   "pending",

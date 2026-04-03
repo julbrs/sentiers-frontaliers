@@ -10,6 +10,7 @@ import { PRICE_BY_TYPE } from "@/constants";
 const typeLabel = {
   personal: "Individuel",
   family: "Familial",
+  corporate: "Corporatif",
 } as const;
 
 const statusLabel = {
@@ -82,7 +83,7 @@ export default async function ProfilePage({
             </CardTitle>
             <CardDescription>
               Individuel: {PRICE_BY_TYPE.personal}$ | Familial: {PRICE_BY_TYPE.family}$ - Paiement
-              sécurisé via Clover
+              sécurisé via Clover | Corporatif: {PRICE_BY_TYPE.corporate}$
             </CardDescription>
           </CardHeader>
           <CardContent>

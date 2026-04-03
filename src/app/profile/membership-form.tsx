@@ -21,7 +21,7 @@ import { PRICE_BY_TYPE, TOPO_MAP_PRICE } from "@/constants";
 
 const membershipFormSchema = z
   .object({
-    type: z.enum(["personal", "family"]),
+    type: z.enum(["personal", "family", "corporate"]),
     firstName: z.string().trim().min(1, "Le prénom est requis"),
     lastName: z.string().trim().min(1, "Le nom est requis"),
     address: z.string().trim().min(1, "L'adresse est requise"),
@@ -159,7 +159,7 @@ export function MembershipForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Type d&apos;adhésion</FormLabel>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <button
                   type="button"
                   onClick={() => field.onChange("personal")}
@@ -185,6 +185,19 @@ export function MembershipForm({
                 >
                   <p className="font-semibold text-(--sf-red-800)">Familial</p>
                   <p className="text-sm text-zinc-600">{PRICE_BY_TYPE.family}$</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => field.onChange("corporate")}
+                  className={cn(
+                    "rounded-lg border p-4 text-left transition-colors",
+                    field.value === "corporate"
+                      ? "border-(--sf-red-700) bg-(--sf-off-white)"
+                      : "border-zinc-200 hover:border-(--sf-red-700)",
+                  )}
+                >
+                  <p className="font-semibold text-(--sf-red-800)">Corporatif</p>
+                  <p className="text-sm text-zinc-600">{PRICE_BY_TYPE.corporate}$</p>
                 </button>
               </div>
               <FormMessage />
