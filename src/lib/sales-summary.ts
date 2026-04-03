@@ -42,7 +42,7 @@ export const salesSummaryInputSchema = z
 export type SalesSummaryInput = z.infer<typeof salesSummaryInputSchema>;
 
 export type SalesSummaryProductLine = {
-  accountNumber: "4005" | "4006" | "4050" | "4205";
+  accountNumber: "4005" | "4006" | "4007" | "4050" | "4205";
   title: string;
   unitPrice: number | null;
   quantitySold: number;
@@ -81,6 +81,7 @@ export type CloverSalesSummary = {
 };
 
 type ProductBucket = {
+  lineId: ProductLineId;
   accountNumber: SalesSummaryProductLine["accountNumber"];
   title: string;
   quantitySold: number;
@@ -90,37 +91,72 @@ type ProductBucket = {
   unitPricesSold: Set<number>;
 };
 
-const PRODUCT_ACCOUNT_ORDER: SalesSummaryProductLine["accountNumber"][] = [
-  "4005",
-  "4006",
-  "4050",
-  "4205",
+type ProductLineId =
+  | "membership_personal"
+  | "membership_family"
+  | "membership_corporate"
+  | "donation"
+  | "topo_map";
+
+const PRODUCT_LINE_ORDER: ProductLineId[] = [
+  "membership_personal",
+  "membership_family",
+  "membership_corporate",
+  "donation",
+  "topo_map",
 ];
 
-const PRODUCT_TITLES: Record<SalesSummaryProductLine["accountNumber"], string> = {
-  "4005": "Adhésion annuelle individuelle",
-  "4006": "Adhésion annuelle familiale",
-  "4050": "Don",
-  "4205": "Carte topographique hydrofuge",
+const PRODUCT_LINE_META: Record<
+  ProductLineId,
+  { accountNumber: SalesSummaryProductLine["accountNumber"]; title: string }
+> = {
+  membership_personal: {
+    accountNumber: "4005",
+    title: "Adhésion annuelle individuelle",
+  },
+  membership_family: {
+    accountNumber: "4006",
+    title: "Adhésion annuelle familiale",
+  },
+  membership_corporate: {
+    accountNumber: "4007",
+    title: "Adhésion annuelle corporative",
+  },
+  donation: {
+    accountNumber: "4050",
+    title: "Don",
+  },
+  topo_map: {
+    accountNumber: "4205",
+    title: "Carte topographique hydrofuge",
+  },
 };
 
 const toCents = (value: number) => Math.round(value * 100);
 const fromCents = (value: number) => value / 100;
 
-function resolveAccountNumber(
+function resolveProductLineId(
   lineType: string,
   membershipType: "personal" | "family" | "corporate" | null,
-) {
+): ProductLineId | null {
   if (lineType === "membership") {
-    return membershipType === "family" ? "4006" : "4005";
+    if (membershipType === "family") {
+      return "membership_family";
+    }
+
+    if (membershipType === "corporate") {
+      return "membership_corporate";
+    }
+
+    return "membership_personal";
   }
 
   if (lineType === "donation") {
-    return "4050";
+    return "donation";
   }
 
   if (lineType === "topo_map") {
-    return "4205";
+    return "topo_map";
   }
 
   return null;
@@ -163,12 +199,14 @@ export async function buildCloverSalesSummary(
       ),
     );
 
-  const buckets = new Map<SalesSummaryProductLine["accountNumber"], ProductBucket>();
+  const buckets = new Map<ProductLineId, ProductBucket>();
 
-  for (const accountNumber of PRODUCT_ACCOUNT_ORDER) {
-    buckets.set(accountNumber, {
-      accountNumber,
-      title: PRODUCT_TITLES[accountNumber],
+  for (const lineId of PRODUCT_LINE_ORDER) {
+    const meta = PRODUCT_LINE_META[lineId];
+    buckets.set(lineId, {
+      lineId,
+      accountNumber: meta.accountNumber,
+      title: meta.title,
       quantitySold: 0,
       quantityRefunded: 0,
       totalSold: 0,
@@ -178,13 +216,13 @@ export async function buildCloverSalesSummary(
   }
 
   for (const row of rows) {
-    const accountNumber = resolveAccountNumber(row.lineType, row.membershipType);
+    const productLineId = resolveProductLineId(row.lineType, row.membershipType);
 
-    if (!accountNumber) {
+    if (!productLineId) {
       continue;
     }
 
-    const bucket = buckets.get(accountNumber);
+    const bucket = buckets.get(productLineId);
 
     if (!bucket) {
       continue;
@@ -205,12 +243,12 @@ export async function buildCloverSalesSummary(
     bucket.unitPricesSold.add(lineUnitPrice);
   }
 
-  const productLines = PRODUCT_ACCOUNT_ORDER.map((accountNumber) => {
-    const bucket = buckets.get(accountNumber)!;
+  const productLines = PRODUCT_LINE_ORDER.map((lineId) => {
+    const bucket = buckets.get(lineId)!;
     const uniqueSoldUnitPrices = Array.from(bucket.unitPricesSold.values());
 
     return {
-      accountNumber,
+      accountNumber: bucket.accountNumber,
       title: bucket.title,
       unitPrice: uniqueSoldUnitPrices.length === 1 ? uniqueSoldUnitPrices[0] : null,
       quantitySold: bucket.quantitySold,

@@ -98,7 +98,7 @@ export const SalesSummaryPdf = ({ summary }: SalesSummaryPdfProps) => (
       </View>
 
       {summary.productLines.map((line) => (
-        <View style={styles.row} key={line.accountNumber}>
+        <View style={styles.row} key={`${line.accountNumber}-${line.title}`}>
           <Text style={styles.colAccount}>{line.accountNumber}</Text>
           <Text style={styles.colProject}>{summary.projectCode}</Text>
           <Text style={styles.colTitle}>{line.title}</Text>

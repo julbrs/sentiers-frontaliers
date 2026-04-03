@@ -252,9 +252,7 @@ export default function AdminSalesSummaryPage() {
       <Card>
         <CardHeader>
           <CardTitle>Frais supplémentaires</CardTitle>
-          <CardDescription>
-            Ajoutez des lignes de frais manuelles (ex: frais Stripe, location de terminal).
-          </CardDescription>
+          <CardDescription>Ajoutez des lignes de frais manuelles.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {extraFees.map((fee) => (
@@ -301,9 +299,7 @@ export default function AdminSalesSummaryPage() {
       <Card>
         <CardHeader>
           <CardTitle>Recettes manuelles</CardTitle>
-          <CardDescription>
-            Ajoutez des lignes de recettes manuelles (numéro de compte, libellé, montant).
-          </CardDescription>
+          <CardDescription>Ajoutez des lignes de recettes manuelles.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {manualRevenues.map((revenue) => (
@@ -386,7 +382,7 @@ export default function AdminSalesSummaryPage() {
               </TableHeader>
               <TableBody>
                 {summary.productLines.map((line) => (
-                  <TableRow key={line.accountNumber}>
+                  <TableRow key={`${line.accountNumber}-${line.title}`}>
                     <TableCell>{line.accountNumber}</TableCell>
                     <TableCell>{summary.projectCode}</TableCell>
                     <TableCell>{line.title}</TableCell>
