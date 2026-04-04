@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createContact, updateContact, type ContactInput, type Contact } from "@/actions/contact";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "Le prénom est requis"),
@@ -43,7 +43,6 @@ type ContactDialogProps = {
 export function ContactDialog({ contact, onSuccess }: ContactDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(formSchema),
@@ -80,25 +79,22 @@ export function ContactDialog({ contact, onSuccess }: ContactDialogProps) {
 
       if (contact) {
         await updateContact(contact.id, input);
-        toast({
-          title: "Contact mis à jour",
+        toast("Contact mis à jour", {
           description: "Le contact a été mis à jour avec succès.",
         });
       } else {
         await createContact(input);
-        toast({ title: "Contact créé", description: "Un nouveau contact a été créé." });
+        toast("Contact créé", { description: "Un nouveau contact a été créé." });
       }
 
       setOpen(false);
       form.reset();
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: contact
           ? "Échec de la mise à jour du contact"
           : "Échec de la création du contact",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

@@ -14,9 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Contact } from "@/actions/contact";
 import { deleteDonation, type DonationWithContact } from "@/actions/donation";
-import { useToast } from "@/hooks/use-toast";
 import { DonationDialog } from "@/app/admin/season/[id]/donation/donation-dialog";
 import { SendDonationReceiptButton } from "@/app/admin/season/[id]/donation/send-donation-receipt-button";
+import { toast } from "sonner";
 
 type DonationTableProps = {
   seasonId: number;
@@ -39,6 +39,7 @@ const paymentTypeLabel: Record<string, string> = {
   cash: "Espèces",
   check: "Chèque",
   bank_transfer: "Virement",
+  card: "Carte",
   other: "Autre",
 };
 
@@ -50,7 +51,6 @@ export function DonationTable({
   onContactCreated,
 }: DonationTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const { toast } = useToast();
 
   const receiptTitles = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("fr-CA", {
@@ -82,13 +82,11 @@ export function DonationTable({
     try {
       setDeletingId(id);
       await deleteDonation(id, seasonId);
-      toast({ title: "Don supprimé", description: `${label} a été supprimé.` });
+      toast("Don supprimé", { description: `${label} a été supprimé.` });
       onRefresh();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Impossible de supprimer ce don.",
-        variant: "destructive",
       });
     } finally {
       setDeletingId(null);
@@ -152,7 +150,7 @@ export function DonationTable({
                       {donation.receiptStatus === "sent" ? (
                         <span title={receiptTitles[donation.id]}>
                           <CheckCircle2
-                            className="h-5 w-5 text-emerald-600"
+                            className="h-5 w-5 text-(--sf-red-700)"
                             aria-label={receiptTitles[donation.id]}
                           />
                         </span>

@@ -1,12 +1,22 @@
 import { headers } from "next/headers";
 import { auth } from "./auth";
 
-export const checkAdmin = async () => {
+export const requireSession = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session || session.user?.role !== "admin") {
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
+  return session;
+};
+
+export const checkAdmin = async () => {
+  const session = await requireSession();
+
+  if (session.user?.role !== "admin") {
     throw new Error("Unauthorized");
   }
 };

@@ -36,7 +36,7 @@ import {
   type DonationInput,
   type DonationWithContact,
 } from "@/actions/donation";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -48,7 +48,7 @@ const formSchema = z
     phone: z.string().optional(),
     address: z.string().optional(),
     amount: z.coerce.number().positive("Le montant doit être supérieur à 0"),
-    paymentType: z.enum(["cash", "check", "bank_transfer", "other"]),
+    paymentType: z.enum(["cash", "check", "bank_transfer", "card", "other"]),
     date: z.string().min(1, "La date est requise"),
     notes: z.string().optional(),
   })
@@ -99,7 +99,6 @@ export function DonationDialog({
 }: DonationDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<DonationFormValues>({
     resolver: zodResolver(formSchema),
@@ -164,10 +163,10 @@ export function DonationDialog({
 
       if (donation) {
         await updateDonation(donation.id, payload);
-        toast({ title: "Don mis à jour", description: "Le don a été mis à jour." });
+        toast("Don mis à jour", { description: "Le don a été mis à jour." });
       } else {
         await createDonation(payload);
-        toast({ title: "Don créé", description: "Un nouveau don a été enregistré." });
+        toast("Don créé", { description: "Un nouveau don a été enregistré." });
       }
 
       setOpen(false);
@@ -186,10 +185,8 @@ export function DonationDialog({
       });
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: donation ? "Échec de la mise à jour du don" : "Échec de la création du don",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -364,6 +361,7 @@ export function DonationDialog({
                         <SelectItem value="cash">Espèces</SelectItem>
                         <SelectItem value="check">Chèque</SelectItem>
                         <SelectItem value="bank_transfer">Virement</SelectItem>
+                        <SelectItem value="card">Carte</SelectItem>
                         <SelectItem value="other">Autre</SelectItem>
                       </SelectContent>
                     </Select>

@@ -58,7 +58,7 @@ export default function SeasonDonationsPage({ params }: PageProps) {
     <div className="w-full space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <HandHeart className="h-6 w-6 text-emerald-600" />
+          <HandHeart className="h-6 w-6 text-(--sf-red-700)" />
           Dons - Saison {seasonName || seasonId}
         </h1>
       </div>

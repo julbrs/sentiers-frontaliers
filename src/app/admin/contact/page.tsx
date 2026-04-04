@@ -32,7 +32,7 @@ export default function ContactManagementPage() {
     <div className="w-full space-y-6">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Users className="h-6 w-6 text-emerald-600" />
+          <Users className="h-6 w-6 text-(--sf-red-700)" />
           Gestion des contacts
         </h1>
       </div>
