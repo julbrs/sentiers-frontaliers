@@ -82,8 +82,8 @@ export default async function ProfilePage({
               <span>Nouvelle adhésion</span>
             </CardTitle>
             <CardDescription>
-              Individuel: {PRICE_BY_TYPE.personal}$ | Familial: {PRICE_BY_TYPE.family}$ - Paiement
-              sécurisé via Clover | Corporatif: {PRICE_BY_TYPE.corporate}$
+              Individuel: {PRICE_BY_TYPE.personal}$ | Familial: {PRICE_BY_TYPE.family}$ |
+              Corporatif: {PRICE_BY_TYPE.corporate}$ - Paiement sécurisé via Clover
             </CardDescription>
           </CardHeader>
           <CardContent>

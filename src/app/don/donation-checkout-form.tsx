@@ -136,9 +136,9 @@ export function DonationCheckoutForm({
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-(--sf-secondary-300) hover:bg-(--sf-secondary-700) text-white"
+          className="w-full bg-(--sf-red-700) hover:bg-(--sf-red-800) text-white"
         >
-          {loading ? "Redirection vers Clover..." : "Continuer vers le paiement"}
+          {loading ? "Création de la session Clover..." : "Passer au paiement Clover"}
         </Button>
       </form>
     </Form>
